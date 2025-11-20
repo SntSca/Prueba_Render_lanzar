@@ -9,7 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.CrossOrigin;
 import com.example.usersbe.dto.CaptchaVerifyRequest;
 import com.example.usersbe.dto.LoginRequest;
 import com.example.usersbe.dto.LoginResponse;
@@ -25,6 +25,11 @@ import com.example.usersbe.services.IpAttemptLimiter;
 
 @RestController
 @RequestMapping("/auth")
+@CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://front-prueba-rvjq.onrender.com"
+})
+
 public class AuthController {
 
     private static final String MSG_KEY = "message";
