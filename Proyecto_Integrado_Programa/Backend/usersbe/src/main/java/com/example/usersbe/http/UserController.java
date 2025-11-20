@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import com.example.usersbe.dto.AdminCreationRequest;
 import com.example.usersbe.exceptions.ForbiddenException;
@@ -35,6 +36,11 @@ import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
 @RequestMapping("users")
+    @CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://front-prueba-rvjq.onrender.com"
+})
+
 public class UserController {
 
     private final UserService userService;
