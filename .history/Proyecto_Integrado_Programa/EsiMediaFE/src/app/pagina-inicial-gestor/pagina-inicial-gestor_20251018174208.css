@@ -1,0 +1,99 @@
+/* ===== Ajustes para el nuevo HTML (overlay y edit-panel son <button>) ===== */
+:root{
+  --top-offset: 80px;   /* separa el panel de la navbar; súbelo/bájalo si hace falta */
+  --pad-top: 28px;      /* acolchado interno superior del panel */
+  --edit-form-w: 520px; /* ancho del panel */
+}
+
+/* Overlay como botón -> reset mínimo + ocupa toda la pantalla */
+.overlay{
+  -webkit-appearance: none;
+  appearance: none;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  position: fixed;
+  inset: 0;
+  z-index: 998;
+  cursor: default;
+  outline: none;
+}
+
+/* El panel de editar es un <button>: reset completo y comportamiento de contenedor */
+.edit-panel.modal{
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #2d2d2d;     /* borde del panel */
+  background: #151515;           /* fondo del panel */
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  line-height: normal;
+  display: block;                /* como un contenedor normal */
+
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: max(var(--top-offset), env(safe-area-inset-top));
+
+  width: min(var(--edit-form-w), 92vw);
+  max-width: min(var(--edit-form-w), 92vw);
+
+  height: auto;
+  max-height: calc(100svh - max(var(--top-offset), env(safe-area-inset-top)) - max(16px, env(safe-area-inset-bottom)));
+  overflow-y: auto;              /* ¡scroll visible! */
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+
+  padding: var(--pad-top) 12px 16px;
+  border-radius: 14px;
+  box-sizing: border-box;
+  z-index: 10010;
+
+  /* scrollbars consistentes */
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a #0e0e0e;
+}
+/* Estilo de scrollbar (webkit) */
+.edit-panel.modal::-webkit-scrollbar { width: 10px; }
+.edit-panel.modal::-webkit-scrollbar-track { background: #0e0e0e; border-left: 1px solid #191919; }
+.edit-panel.modal::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 10px; border: 2px solid #0e0e0e; }
+.edit-panel.modal::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+/* El contenido interno ocupa bien el ancho */
+.edit-panel.modal .edit-body{
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Evita estilos de botón en los hijos (por si heredan) */
+.edit-panel.modal *{
+  font: inherit;
+  line-height: inherit;
+}
+
+/* El botón de cerrar mantiene su posición relativa al panel */
+.edit-panel.modal .modal-close{
+  position: sticky;   /* se mantiene visible al hacer scroll */
+  top: 8px;
+  float: right;       /* evita tapar el título al principio */
+}
+
+/* Ajuste en alturas bajas: reduce offset y aumenta área útil */
+@media (max-height: 640px){
+  :root{
+    --top-offset: 64px;
+    --pad-top: 22px;
+  }
+  .edit-panel.modal{
+    max-height: calc(100svh - max(var(--top-offset), env(safe-area-inset-top)) - 10px);
+  }
+}

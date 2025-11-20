@@ -1,0 +1,11 @@
+[33mcommit ba3b5e7e9b47a276f3e62c6c7f71e54485bff4b5[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mHU01_Registro_de_Usuarios[m[33m, [m[1;31morigin/master[m[33m, [m[1;31morigin/development[m[33m, [m[1;31morigin/Testing[m[33m, [m[1;31morigin/HotFix[m[33m, [m[1;31morigin/HU01_Registro_de_Usuarios[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmaster[m[33m, [m[1;32mdevelopment[m[33m, [m[1;32mTesting[m[33m, [m[1;32mHotFix[m[33m)[m
+Author: SntSca <Santiago.Sanchez12@alu.uclm.es>
+Date:   Thu Oct 2 10:47:13 2025 +0200
+
+    Añado recogida de requisitos en la clase del dia 1 de octubre
+
+[33mcommit ef6d67ad28190e050fffe033c30ad1f33e52481c[m
+Author: SntSca <Santiago.Sanchez12@alu.uclm.es>
+Date:   Wed Oct 1 23:36:43 2025 +0200
+
+    Añado información, backend y frontend nuevos vacios

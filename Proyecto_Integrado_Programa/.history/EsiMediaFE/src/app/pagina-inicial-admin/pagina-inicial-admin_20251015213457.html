@@ -1,0 +1,74 @@
+<table class="users-table">
+  <thead>
+    <tr>
+      <th>Alias</th>
+      <th>Nombre</th>
+      <th>Email</th>
+      <th>Rol</th>
+      <th>Estado</th>
+      <th>VIP</th> <!-- NUEVA COLUMNA -->
+      <th style="width:240px">Acciones</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let u of pageItems; trackBy: trackUser">
+      <td>
+        <span class="user-photo-small">
+          <span class="user-photo-fallback">{{ (u.alias || 'U')[0] | uppercase }}</span>
+        </span>
+        {{ u.alias }}
+      </td>
+      <td>{{ u.nombre }}</td>
+      <td>{{ u.email }}</td>
+      <td>{{ u.role }}</td>
+      <td>
+        <span
+          class="status-badge"
+          [class.status-badge--green]="!u.blocked"
+          [class.status-badge--red]="u.blocked"
+        >
+          {{ u.blocked ? 'Bloqueado' : 'Activo' }}
+        </span>
+      </td>
+
+      <!-- CELDA VIP (solo para usuarios) -->
+      <td class="vip-cell">
+        <ng-container *ngIf="isUser(u); else noVipCell">
+          <span
+            class="status-badge"
+            [class.status-badge--green]="!!u.vip"
+            [class.status-badge--red]="!u.vip"
+          >
+            {{ u.vip ? 'Sí' : 'No' }}
+          </span>
+        </ng-container>
+        <ng-template #noVipCell>—</ng-template>
+      </td>
+
+      <td class="actions-cell">
+        <button
+          type="button"
+          class="action-btn btn-edit"
+          [disabled]="!(isCreator(u) || isAdmin(u)) || isSuperAdmin(u)"
+          (click)="editUser(u)"
+        >Editar</button>
+
+        <button
+          type="button"
+          class="action-btn btn-block"
+          [disabled]="!(isCreator(u) || isAdmin(u)) || isSuperAdmin(u)"
+          (click)="toggleBlockUser(u)"
+        >
+          {{ u.blocked ? 'Desbloquear' : 'Bloquear' }}
+        </button>
+
+        <button
+          type="button"
+          class="action-btn btn-consult"
+          [disabled]="!(isCreator(u) || isAdmin(u)) || isSuperAdmin(u)"
+          (click)="deleteUser(u)"
+        >Eliminar</button>
+      </td>
+    </tr>
+  </tbody>
+</table>

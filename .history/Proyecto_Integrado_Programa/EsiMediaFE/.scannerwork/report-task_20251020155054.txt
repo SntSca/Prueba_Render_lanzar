@@ -1,0 +1,11 @@
+projectKey=2025-g03-frontend
+serverUrl=http://seralu4.esi.uclm.es:1521
+serverVersion=10.6.0.92116
+dashboardUrl=http://seralu4.esi.uclm.es:1521/dashboard?id=2025-g03-frontend
+<<<<<<< HEAD
+ceTaskId=d88e4f48-1a30-4721-ae1c-95c269c04dad
+ceTaskUrl=http://seralu4.esi.uclm.es:1521/api/ce/task?id=d88e4f48-1a30-4721-ae1c-95c269c04dad
+=======
+ceTaskId=2f0e9649-c4b3-4310-9c4c-0f97ba121b40
+ceTaskUrl=http://seralu4.esi.uclm.es:1521/api/ce/task?id=2f0e9649-c4b3-4310-9c4c-0f97ba121b40
+>>>>>>> hotfix-fin-de-sprint

@@ -1,0 +1,214 @@
+<div class="full-screen-wrapper">
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <ul class="navbar-options">
+        <li><a class="active">👥 Gestión de Usuarios</a></li>
+      </ul>
+      <div class="user-panel">
+        <div class="user-photo" [title]="userName">
+          <img *ngIf="userAvatarUrl; else initialsTpl" [src]="userAvatarUrl" alt="Avatar" (error)="onAvatarError()" />
+          <ng-template #initialsTpl><span class="user-photo-fallback">{{ userInitials }}</span></ng-template>
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ userName }}</div>
+          <div class="user-email">{{ userEmail }}</div>
+          <div class="user-role">🛡️ {{ userRole }}</div>
+        </div>
+        <button class="logout-btn" disabled>🚪 Salir</button>
+      </div>
+    </nav>
+
+    <div class="main-container">
+      <aside class="filter-panel">
+        <h3>🔎 Filtros</h3>
+        <form (submit)="$event.preventDefault()">
+          <div class="filter-section">
+            <label for="nombre">🔤 Búsqueda</label>
+            <input id="nombre" type="text" name="nombre" [(ngModel)]="filtros.nombre" (ngModelChange)="onSearchChange()" placeholder="Alias, nombre, apellidos, email" />
+          </div>
+          <div class="filter-section">
+            <label for="tipo">🧩 Tipo de usuario</label>
+            <select id="tipo" name="tipo" [(ngModel)]="filtros.tipo" (ngModelChange)="onTipoChange()">
+              <option value="">Todos</option>
+              <option value="ADMINISTRADOR">Administradores</option>
+              <option value="GESTOR_CONTENIDO">Creadores</option>
+              <option value="USUARIO">Usuarios</option>
+            </select>
+          </div>
+          <div class="filter-section">
+            <label for="bloqueado">🔐 Estado</label>
+            <select id="bloqueado" name="bloqueado" [(ngModel)]="filtros.bloqueado" (ngModelChange)="onStateChange()">
+              <option value="">Todos</option>
+              <option value="no">Activos</option>
+              <option value="si">Bloqueados</option>
+            </select>
+          </div>
+          <div class="filter-section">
+            <label for="vip">⭐ VIP</label>
+            <select id="vip" name="vip" [(ngModel)]="filtros.vip" (ngModelChange)="onVipChange()">
+              <option value="">Cualquiera</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+          <div class="filter-section">
+            <label for="ordenar">↕️ Ordenar</label>
+            <select id="ordenar" name="ordenar" [(ngModel)]="filtros.ordenar" (ngModelChange)="onOrderChange()">
+              <option value="fecha">🗓️ Fecha</option>
+              <option value="nombre">🔠 Nombre</option>
+              <option value="rol">🏷️ Rol</option>
+              <option value="vip">⭐ VIP</option>
+            </select>
+          </div>
+        </form>
+      </aside>
+
+      <main class="content-area">
+        <section>
+          <h3>🎛️ Administración</h3>
+          <button type="button" class="action-btn btn-edit" (click)="openCreateAdmin()">➕ Nuevo administrador</button>
+
+          <div class="spinner" *ngIf="loading"><div class="loader"></div><span>⏳ Cargando...</span></div>
+          <div class="alert error" *ngIf="!loading && errorMsg">❌ {{ errorMsg }}</div>
+          <div class="empty" *ngIf="!loading && !errorMsg && filteredUsers.length === 0">🕵️‍♂️ Sin resultados</div>
+
+          <div class="table-wrap" *ngIf="!loading && !errorMsg && filteredUsers.length > 0">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>🖼️ Avatar</th>
+                  <th>🧑 Alias</th>
+                  <th>📝 Nombre</th>
+                  <th>📧 Email</th>
+                  <th>🏷️ Rol</th>
+                  <th>🔐 Estado</th>
+                  <th>⭐ VIP</th>
+                  <th style="width:260px">🛠️ Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of pageItems; trackBy: trackUser">
+                  <td>
+                    <span class="user-photo-small">
+                      <img *ngIf="u.fotoUrl; else initialsFallback" [src]="u.fotoUrl" alt="avatar" (error)="u.fotoUrl=null" />
+                      <ng-template #initialsFallback><span class="user-photo-fallback">{{ (u.alias || u.nombre || 'U')[0] | uppercase }}</span></ng-template>
+                    </span>
+                  </td>
+                  <td>{{ u.alias }}</td>
+                  <td>{{ u.nombre }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>{{ u.role }}</td>
+                  <td>
+                    <span class="status-badge" [class.status-badge--green]="!u.blocked" [class.status-badge--red]="u.blocked" [title]="u.blocked ? 'Bloqueado' : 'Activo'">
+                      {{ u.blocked ? '🔒' : '🔓' }}
+                    </span>
+                  </td>
+                  <td class="vip-cell">
+                    <ng-container *ngIf="isUser(u); else noVipCell">
+                      <span class="status-badge" [class.status-badge--green]="!!u.vip" [class.status-badge--red]="!u.vip" [title]="u.vip ? 'VIP' : 'No VIP'">
+                        {{ u.vip ? '⭐' : '☆' }}
+                      </span>
+                    </ng-container>
+                    <ng-template #noVipCell>—</ng-template>
+                  </td>
+                  <td class="actions-cell">
+                    <button type="button" class="action-btn btn-edit" [disabled]="!isAdmin(u) || isSuperAdmin(u)" (click)="openEditAdminModal(u)" title="Editar">✏️</button>
+                    <button type="button" class="action-btn btn-block" [disabled]="!isAdmin(u) || isSuperAdmin(u)" (click)="toggleBlockUser(u)" [title]="u.blocked ? 'Desbloquear' : 'Bloquear'">
+                      {{ u.blocked ? '🔓' : '🔒' }}
+                    </button>
+                    <button type="button" class="action-btn btn-consult" [disabled]="!isAdmin(u) || isSuperAdmin(u)" (click)="deleteUser(u)" title="Eliminar">🗑️</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="pager">
+              <button type="button" (click)="goto(page-1)" [disabled]="page<=1">«</button>
+              <span>📄 Página {{ page }} / {{ totalPages }}</span>
+              <button type="button" (click)="goto(page+1)" [disabled]="page>=totalPages">»</button>
+              <select [(ngModel)]="pageSize" (change)="goto(1)">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="20">20</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <div class="modal" *ngIf="showCreateAdminModal">
+          <div class="modal-content">
+            <span class="close" (click)="cancelCreateAdmin()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">➕ Nuevo administrador</h3>
+            <form #createAdminForm="ngForm" (ngSubmit)="createAdmin(createAdminForm)">
+              <div class="filter-section"><label>Nombre</label><input name="nombre" [(ngModel)]="crearAdmin.nombre" required minlength="2" maxlength="100" /></div>
+              <div class="filter-section"><label>Apellidos</label><input name="apellidos" [(ngModel)]="crearAdmin.apellidos" required minlength="2" maxlength="120" /></div>
+              <div class="filter-section">
+                <label>Alias</label>
+                <div class="alias-row">
+                  <input name="alias" [(ngModel)]="crearAdmin.alias" required minlength="2" maxlength="50" (ngModelChange)="onAliasChangeCreate($event)" />
+                  <div class="alias-status">
+                    <span class="spinner" *ngIf="aliasChecking"></span>
+                    <span *ngIf="!aliasChecking && aliasAvailable === true" class="chip-ok">Disponible</span>
+                    <span *ngIf="!aliasChecking && aliasAvailable === false" class="chip-bad">No disponible</span>
+                  </div>
+                </div>
+              </div>
+              <div class="filter-section"><label>Email</label><input type="email" name="email" [(ngModel)]="crearAdmin.email" required maxlength="180" /></div>
+              <div class="filter-section"><label>Contraseña</label><input type="password" name="pwd" [(ngModel)]="crearAdmin.pwd" required minlength="8" /></div>
+              <div class="filter-section"><label>Repetir contraseña</label><input type="password" name="pwd2" [(ngModel)]="crearAdmin.pwd2" required minlength="8" /><small class="error-msg" *ngIf="pwdMismatchCreate">Las contraseñas no coinciden</small></div>
+              <div class="filter-section"><label>Departamento</label><input name="departamento" [(ngModel)]="crearAdmin.departamento" required maxlength="120" /></div>
+              <div class="filter-section"><label>Foto (URL)</label><input name="foto" [(ngModel)]="crearAdmin.foto" maxlength="500" /></div>
+              <div class="filter-section"><label>Fecha de nacimiento</label><input type="date" name="fechaNac" [(ngModel)]="crearAdmin.fechaNac" /></div>
+              <div class="modal-actions" style="margin-top:20px">
+                <button class="action-btn btn-edit" type="submit" [disabled]="createAdminForm.invalid || aliasAvailable===false || pwdMismatchCreate || loading">{{ loading ? 'Creando…' : 'Crear' }}</button>
+                <button class="action-btn btn-consult" type="button" (click)="cancelCreateAdmin()">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showEditAdminModal">
+          <div class="modal-content">
+            <span class="close" (click)="cancelEditAdmin()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">✏️ Editar administrador</h3>
+            <form #editAdminForm="ngForm" (ngSubmit)="saveAdminEdit(editAdminForm)">
+              <div class="filter-section"><label>Alias</label><input name="alias" [(ngModel)]="adminEditModel.alias" required minlength="2" maxlength="50" (ngModelChange)="onAdminAliasInput($event)" /><div class="help error" *ngIf="adminAliasTaken">Alias en uso</div></div>
+              <div class="filter-section"><label>Nombre</label><input name="nombre" [(ngModel)]="adminEditModel.nombre" required minlength="2" maxlength="100" /></div>
+              <div class="filter-section"><label>Apellidos</label><input name="apellidos" [(ngModel)]="adminEditModel.apellidos" maxlength="120" /></div>
+              <div class="filter-section"><label>Email</label><input type="email" name="email" [(ngModel)]="adminEditModel.email" required maxlength="180" /></div>
+              <div class="filter-section">
+                <label>Avatar</label>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <div *ngIf="adminEditModel.fotoPreviewUrl" style="display:flex;align-items:center;gap:10px">
+                    <img [src]="adminEditModel.fotoPreviewUrl" alt="avatar preview" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid #444" />
+                  </div>
+                  <input name="foto" [(ngModel)]="adminEditModel.foto" placeholder="URL" />
+                  <small *ngIf="!adminEditModel.fotoPreviewUrl" style="color:#bbb">Sin avatar</small>
+                </div>
+              </div>
+              <div class="modal-actions" style="margin-top:20px">
+                <button class="action-btn btn-edit" type="submit" [disabled]="editAdminForm.invalid || adminAliasTaken || loading">{{ loading ? 'Guardando…' : 'Guardar' }}</button>
+                <button class="action-btn btn-consult" type="button" (click)="cancelEditAdmin()">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showConfirmModal">
+          <div class="modal-content">
+            <span class="close" (click)="cancelConfirm()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">❓ Confirmación</h3>
+            <p *ngIf="confirmKind==='block'">¿Bloquear a <strong>{{ targetUser?.alias }}</strong>?</p>
+            <p *ngIf="confirmKind==='unblock'">¿Desbloquear a <strong>{{ targetUser?.alias }}</strong>?</p>
+            <p *ngIf="confirmKind==='delete'">¿Eliminar a <strong>{{ targetUser?.alias }}</strong>?</p>
+            <div class="modal-actions" style="margin-top:20px">
+              <button class="action-btn btn-edit" type="button" (click)="confirmAction()">Aceptar</button>
+              <button class="action-btn btn-consult" type="button" (click)="cancelConfirm()">Cancelar</button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</div>

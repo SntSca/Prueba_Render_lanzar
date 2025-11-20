@@ -1,0 +1,330 @@
+<div class="full-screen-wrapper">
+  <div class="page-wrapper">
+    <!-- NAV -->
+    <nav class="navbar">
+      <ul class="navbar-options">
+        <li><a class="active">Gestión de Contenidos</a></li>
+      </ul>
+
+      <div class="user-panel">
+        <div class="user-photo" [title]="userName">
+          <img *ngIf="userAvatarUrl; else initialsTpl" [src]="userAvatarUrl" alt="Avatar de {{ userName }}" (error)="onAvatarError()" />
+          <ng-template #initialsTpl>
+            <span class="user-photo-fallback">{{ userInitials }}</span>
+          </ng-template>
+        </div>
+
+        <div class="user-info">
+          <div class="user-name-row">
+            <div class="user-name">{{ userName }}</div>
+            <button class="edit-inline" type="button" (click)="toggleEditar()" title="Editar perfil">✏️</button>
+          </div>
+          <div class="user-email">{{ userEmail }}</div>
+          <div class="user-role">{{ userRole }} de {{ userTipoContenido || '—' }}</div>
+        </div>
+
+        <button class="logout-btn" (click)="cerrarSesion()">Cerrar Sesión</button>
+      </div>
+    </nav>
+
+    <!-- MAIN -->
+    <div class="main-container">
+      <!-- PANEL DE FILTROS -->
+      <aside class="filter-panel">
+        <h3>Filtros <span class="tag-construccion">🚧 En construcción</span></h3>
+        <p class="hint-muted">Próximamente podrás filtrar los contenidos desde aquí.</p>
+      </aside>
+
+      <!-- CONTENIDOS -->
+      <main class="content-area">
+        <!-- Toolbar -->
+        <div class="toolbar">
+          <h2 class="page-title">Contenidos</h2>
+          <div class="toolbar-actions">
+            <button class="secondary-btn" type="button" (click)="loadContenidos()">⟳ Recargar</button>
+            <button class="primary-btn" type="button" (click)="abrirCrear()">➕ Añadir contenido</button>
+          </div>
+        </div>
+
+        <!-- Tabla de contenidos -->
+        <section>
+          <div *ngIf="loadingList" class="helper-text">Cargando contenidos…</div>
+
+          <table class="content-table" *ngIf="!loadingList && contenidosList?.length; else emptyList">
+            <thead>
+              <tr>
+                <th style="width: 84px;">Foto</th>
+                <th>Nombre</th>
+                <th>Descripción</th>
+                <th>Tags</th>
+                <th style="width: 90px;">Tipo</th>
+                <th style="width: 120px;">Visible</th>
+                <th style="width: 190px;">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let c of contenidosList; trackBy: trackContenido">
+                <td>
+                  <div class="thumb">
+                    <img *ngIf="c.imagen; else noImg" [src]="c.imagen" alt="imagen {{c.titulo}}" />
+                    <ng-template #noImg><div class="thumb-fallback">—</div></ng-template>
+                  </div>
+                </td>
+
+                <td>{{ c.titulo }}</td>
+                <td class="muted">{{ c.descripcion || 'Sin descripción' }}</td>
+
+                <td>
+                  <div class="tags" *ngIf="c.tags?.length">
+                    <span class="tag" *ngFor="let t of c.tags">{{ t }}</span>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="chip" [class.chip--audio]="c.tipo==='AUDIO'" [class.chip--video]="c.tipo==='VIDEO'">
+                    {{ c.tipo }}
+                  </span>
+                </td>
+
+                <td>
+                  <button class="action-btn" [class.danger]="!c.visible" (click)="onToggleVisible(c)">
+                    {{ c.visible ? 'Visible' : 'No visible' }}
+                  </button>
+                </td>
+
+                <td class="actions-cell">
+                  <button class="action-btn" (click)="abrirVista(c)" title="Ver contenido">👁️ Ver</button>
+                  <button class="action-btn" (click)="openEdit(c)" title="Editar">✏️</button>
+                  <button class="action-btn danger" (click)="deleteContenido(c)" title="Eliminar">🗑️</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #emptyList>
+            <div class="placeholder-content">
+              <p>No hay contenidos todavía. Crea el primero con “Añadir contenido”.</p>
+            </div>
+          </ng-template>
+        </section>
+
+        <!-- MODAL: Crear contenido -->
+        <div *ngIf="crearAbierto" class="modal" aria-modal="true">
+          <div class="modal-backdrop"></div>
+          <div class="modal-content">
+            <button class="modal-close" (click)="cerrarCrear()" aria-label="Cerrar">&times;</button>
+            <h3>Nuevo contenido de {{ userTipoContenido || '...' }}</h3>
+
+            <form #formSubida="ngForm" (ngSubmit)="onSubmit(formSubida)" novalidate class="upload-form">
+              <!-- (Mantén tus campos completos aquí, idénticos al formulario que ya tienes implementado) -->
+            </form>
+          </div>
+        </div>
+
+        <!-- MODAL: Editar contenido -->
+        <div *ngIf="editContentOpen" class="modal" aria-modal="true">
+          <div class="modal-backdrop" (click)="closeEdit()"></div>
+          <div class="modal-content">
+            <button class="modal-close" (click)="closeEdit()" aria-label="Cerrar">&times;</button>
+            <h3>Editar contenido</h3>
+            <form class="upload-form" (ngSubmit)="saveEdit()">
+              <!-- (Campos de edición completos como los tuyos actuales) -->
+            </form>
+          </div>
+        </div>
+
+        <!-- MODAL: Vista previa -->
+        <div *ngIf="vistaAbierta" class="modal" aria-modal="true">
+          <div class="modal-backdrop" (click)="cerrarVista()"></div>
+          <div class="modal-content" style="max-width:900px;">
+            <button class="modal-close" (click)="cerrarVista()" aria-label="Cerrar">&times;</button>
+
+            <div class="viewer">
+              <div class="viewer__media">
+                <div class="viewer__poster" *ngIf="vistaPoster; else noPosterView">
+                  <img [src]="vistaPoster" alt="Portada de {{ vistaContenido?.titulo }}" />
+                </div>
+                <ng-template #noPosterView>
+                  <div class="viewer__poster viewer__poster--empty">Sin imagen</div>
+                </ng-template>
+              </div>
+
+              <div class="viewer__meta">
+                <h3 class="viewer__title">
+                  {{ vistaContenido?.titulo }}
+                  <span class="chip" [ngClass]="(vistaContenido?.tipo === 'AUDIO') ? 'chip--audio' : 'chip--video'">
+                    {{ vistaContenido?.tipo }}
+                  </span>
+                </h3>
+
+                <div class="viewer__badges">
+                  <span class="chip" [class.chip--on]="vistaContenido?.visible" [class.chip--off]="!vistaContenido?.visible">
+                    {{ vistaContenido?.visible ? 'Visible' : 'No visible' }}
+                  </span>
+                  <span class="chip" [class.chip--on]="vistaContenido?.vip" [class.chip--off]="!vistaContenido?.vip">
+                    VIP {{ vistaContenido?.vip ? 'Sí' : 'No' }}
+                  </span>
+                  <span class="chip">Edad {{ vistaContenido?.restringidoEdad }}+</span>
+                  <span class="chip" *ngIf="vistaContenido?.duracionMinutos">{{ vistaContenido?.duracionMinutos }} min</span>
+                  <span class="chip" *ngIf="vistaContenido?.resolucion">{{ vistaContenido?.resolucion }}</span>
+                </div>
+
+                <p class="viewer__desc">
+                  {{ vistaContenido?.descripcion || 'Sin descripción disponible.' }}
+                </p>
+
+                <div class="viewer__tags" *ngIf="vistaContenido?.tags?.length">
+                  <span class="tag" *ngFor="let t of vistaContenido?.tags">{{ t }}</span>
+                </div>
+
+                <div class="viewer__footer">
+                  <button class="secondary-btn" type="button" (click)="cerrarVista()">Cerrar</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+  <!-- OVERLAY perfil -->
+  <button class="overlay" *ngIf="editOpen" (click)="cancelarEditar()"></button>
+
+  <!-- PANEL edición perfil -->
+  <button class="edit-panel modal" [class.open]="editOpen" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" (click)="cancelarEditar()" aria-label="Cerrar">×</button>
+
+    <div class="edit-body">
+      <h3>Editar perfil</h3>
+
+      <form (ngSubmit)="guardarCambios()">
+        <div class="row">
+          <label class="label-lock" for="email_ro">
+            Email
+            <span class="lock" title="Campo bloqueado">🔒</span>
+            <span class="badge-ro">bloqueado</span>
+          </label>
+          <input type="text" [ngModel]="userEmail" name="email_ro" class="ro" readonly disabled />
+        </div>
+
+        <div class="row">
+          <label class="label-lock" for="tipoContenido">
+            Tipo Contenido
+            <span class="lock" title="Campo bloqueado">🔒</span>
+            <span class="badge-ro">bloqueado</span>
+          </label>
+          <input type="text" [ngModel]="model.tipoContenido" name="TipoContenido" class="ro" readonly disabled />
+        </div>
+
+        <div class="row">
+          <label for="nombre">Nombre</label>
+          <input type="text" [(ngModel)]="model.nombre" name="nombre" />
+        </div>
+
+        <div class="row">
+          <label for="apellidos">Apellidos</label>
+          <input type="text" [(ngModel)]="model.apellidos" name="apellidos" />
+        </div>
+
+        <div class="row">
+          <label for="alias">Alias</label>
+          <input type="text" id="alias" name="alias" [(ngModel)]="model.alias" (ngModelChange)="checkAlias(model.alias || '')" />
+          <small *ngIf="aliasChecking" class="info-msg">Comprobando disponibilidad...</small>
+          <small *ngIf="model.alias && (model.alias.length < aliasMinLength || model.alias.length > aliasMaxLength)" class="error-msg">
+            El alias debe tener entre {{aliasMinLength}} y {{aliasMaxLength}} caracteres
+          </small>
+          <small *ngIf="aliasAvailable === false && (model.alias?.length ?? 0) >= aliasMinLength && (model.alias?.length ?? 0) <= aliasMaxLength" class="error-msg">
+            El alias ya está en uso
+          </small>
+          <small *ngIf="aliasAvailable === true && (model.alias?.length ?? 0) >= aliasMinLength && (model.alias?.length ?? 0) <= aliasMaxLength" class="success-msg">
+            ✅ Alias disponible
+          </small>
+        </div>
+
+        <div class="row">
+          <label for="descripcion">Descripcion</label>
+          <input type="text" [(ngModel)]="model.descripcion" name="descripcion" />
+        </div>
+
+        <div class="row">
+          <label for="especialidad">Especialidad</label>
+          <select class="input" id="especialidad" name="especialidad" [(ngModel)]="model.especialidad" (change)="checkEspecialidad()" required>
+            <option value="" disabled selected>Selecciona una especialidad *</option>
+            <option value="edicion-video">Edición de video</option>
+            <option value="postproduccion">Postproducción</option>
+            <option value="animacion">Animación y motion graphics</option>
+            <option value="produccion-audiovisual">Producción audiovisual</option>
+            <option value="grabacion-sonido">Grabación de sonido</option>
+            <option value="mezcla-mastering">Mezcla y mastering de audio</option>
+            <option value="direccion-fotografia">Dirección de fotografía</option>
+            <option value="efectos-visuales">Efectos visuales (VFX)</option>
+            <option value="edicion-sonido">Edición de sonido</option>
+            <option value="colorizacion">Colorización y corrección de color</option>
+          </select>
+          <p class="err" *ngIf="especialidadInvalid">La especialidad no puede estar vacía.</p>
+        </div>
+
+        <div class="Avatar">
+          <button type="button" class="btn" (click)="openAvatarModal()">Elegir Avatar</button>
+          <div *ngIf="selectedAvatar" class="selected-avatar-card">
+            <img [src]="selectedAvatar" alt="avatar" class="selected-avatar-card__img">
+            <div class="selected-avatar-card__text">
+              <b>Avatar seleccionado</b>
+              <small>Puedes cambiarlo cuando quieras</small>
+            </div>
+          </div>
+        </div>
+
+        <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+        <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+        <div class="actions">
+          <button class="btn-darseBaja" type="button" (click)="DarDeBaja(); $event.stopPropagation()">Eliminar Cuenta</button>
+          <button type="button" class="btn-out" (click)="cancelarEditar(); $event.stopPropagation()">Cancelar</button>
+          <button type="submit" class="btn-primario" [disabled]="saving" (click)="$event.stopPropagation()">
+            {{ saving ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </button>
+
+  <!-- Read-only overlay -->
+  <div class="ro-overlay" *ngIf="readOnly" aria-hidden="true"></div>
+
+  <!-- Modal de avatares -->
+  <div *ngIf="showAvatarModal" class="avatar-modal" (click)="closeAvatarModal()"
+       (keydown.enter)="closeAvatarModal()" (keydown.space)="closeAvatarModal()" (keydown.escape)="closeAvatarModal()">
+    <dialog class="avatar-modal-content" open aria-modal="true" aria-labelledby="avatarTitle"
+            (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+
+      <h2 id="avatarTitle" class="avatar-modal-title">Selecciona tu avatar</h2>
+
+      <div class="avatar-preview" *ngIf="selectedAvatar; else noPreview">
+        <img [src]="selectedAvatar" alt="avatar seleccionado">
+        <div class="avatar-preview__caption">Seleccionado</div>
+      </div>
+
+      <ng-template #noPreview>
+        <div class="avatar-preview avatar-preview--placeholder">
+          <span>Selecciona uno de la galería</span>
+        </div>
+      </ng-template>
+
+      <ul class="avatar-grid">
+        <li *ngFor="let avatar of avatars" class="avatar-option" [class.selected]="selectedAvatar === avatar">
+          <button type="button" (click)="selectAvatar(avatar)" (keydown.enter)="selectAvatar(avatar)"
+                  [attr.aria-pressed]="selectedAvatar === avatar" [attr.aria-label]="'Elegir avatar ' + avatar">
+            <img [src]="avatar" alt="avatar">
+            <span class="avatar-check">✓</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="avatar-modal-actions">
+        <button class="btn btn--ghost" type="button" (click)="closeAvatarModal()" (keydown.enter)="closeAvatarModal()">Cancelar</button>
+      </div>
+    </dialog>
+  </div>
+</div>

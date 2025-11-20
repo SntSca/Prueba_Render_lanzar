@@ -1,0 +1,7 @@
+package com.EsiMediaG03.exceptions;
+
+public class ContenidoAddException extends Exception {
+    public ContenidoAddException(String message) {
+        super(message);
+    }
+}

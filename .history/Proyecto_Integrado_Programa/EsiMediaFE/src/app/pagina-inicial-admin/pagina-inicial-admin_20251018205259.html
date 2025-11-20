@@ -1,0 +1,461 @@
+<div class="full-screen-wrapper">
+  <div class="page-wrapper">
+
+    <nav class="navbar">
+      <ul class="navbar-options">
+        <li><a class="active">👥 Gestión de Usuarios</a></li>
+      </ul>
+
+      <div class="user-panel">
+        <div class="user-photo" title="{{ userName }}">
+          <img *ngIf="userAvatarUrl; else initialsTpl" [src]="userAvatarUrl" alt="Avatar de {{ userName }}" (error)="onAvatarError()" />
+          <ng-template #initialsTpl>
+            <span class="user-photo-fallback">{{ userInitials }}</span>
+          </ng-template>
+        </div>
+        <div class="user-info">
+          <div class="user-name">{{ userName }}</div>
+          <div class="user-email">{{ userEmail }}</div>
+          <div class="user-role">🛡️ {{ userRole }}</div>
+        </div>
+        <button class="secondary-btn" type="button" (click)="goToUsuarioReadOnly()">👁️ Ver como usuario</button>
+        <button class="logout-btn" (click)="cerrarSesion()">🚪 Salir</button>
+
+      </div>
+    </nav>
+
+    <div class="main-container">
+      <aside class="filter-panel">
+        <h3>🔎 Filtros</h3>
+        <form (submit)="$event.preventDefault()">
+          <div class="filter-section">
+            <label for="nombre">🔤 Búsqueda (alias/nombre/apellidos/email)</label>
+            <input
+              id="nombre"
+              type="text"
+              name="nombre"
+              [(ngModel)]="filtros.nombre"
+              (ngModelChange)="onSearchChange()"
+              placeholder="Buscar..."
+            />
+          </div>
+
+          <div class="filter-section">
+            <label for="tipo">🧩 Tipo de usuario</label>
+            <select
+              id="tipo"
+              name="tipo"
+              [(ngModel)]="filtros.tipo"
+              (ngModelChange)="onTipoChange()"
+            >
+              <option value="">Todos</option>
+              <option value="ADMINISTRADOR">Administradores</option>
+              <option value="GESTOR_CONTENIDO">Creadores</option>
+              <option value="USUARIO">Usuarios</option>
+            </select>
+          </div>
+
+          <div class="filter-section">
+            <label for="bloqueado">🔐 Estado</label>
+            <select
+              id="bloqueado"
+              name="bloqueado"
+              [(ngModel)]="filtros.bloqueado"
+              (ngModelChange)="onStateChange()"
+            >
+              <option value="">Todos</option>
+              <option value="no">Activos</option>
+              <option value="si">Bloqueados</option>
+            </select>
+          </div>
+
+          <div class="filter-section">
+            <label for="vip">⭐ VIP</label>
+            <select
+              id="vip"
+              name="vip"
+              [(ngModel)]="filtros.vip"
+              (ngModelChange)="onVipChange()"
+            >
+              <option value="">Cualquiera</option>
+              <option value="si">Sí</option>
+              <option value="no">No</option>
+            </select>
+          </div>
+
+          <div class="filter-section">
+            <label for="ordenar">↕️ Ordenar</label>
+            <select
+              id="ordenar"
+              name="ordenar"
+              [(ngModel)]="filtros.ordenar"
+              (ngModelChange)="onOrderChange()"
+            >
+              <option value="fecha">🗓️ Fecha</option>
+              <option value="nombre">🔠 Nombre</option>
+              <option value="rol">🏷️ Rol</option>
+              <option value="vip">⭐ VIP</option>
+            </select>
+          </div>
+        </form>
+      </aside>
+
+      <main class="content-area">
+        <section>
+          <h3>🎬 Creadores de contenido</h3>
+          <button type="button" class="action-btn btn-edit" (click)="openCreate()">➕ Nuevo creador</button>
+          <button type="button" class="action-btn btn-edit" (click)="openCreateAdmin()">➕ Nuevo administrador</button>
+
+          <div class="spinner" *ngIf="loading">
+            <div class="loader"></div><span>⏳ Cargando...</span>
+          </div>
+
+          <div class="alert error" *ngIf="!loading && errorMsg">
+            ❌ {{ errorMsg }}
+          </div>
+
+          <div class="empty" *ngIf="!loading && !errorMsg && filteredUsers.length === 0">
+            🕵️‍♂️ No hay resultados para los filtros actuales.
+          </div>
+
+          <div class="table-wrap" *ngIf="!loading && !errorMsg && filteredUsers.length > 0">
+            <table class="users-table">
+              <thead>
+                <tr>
+                  <th>🖼️ Avatar</th>
+                  <th>🧑 Alias</th>
+                  <th>📝 Nombre</th>
+                  <th>📧 Email</th>
+                  <th>🏷️ Rol</th>
+                  <th>🔐 Estado</th>
+                  <th>⭐ VIP</th>
+                  <th style="width:150px">🛠️ Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let u of pageItems; trackBy: trackUser">
+                  <td>
+                    <span class="user-photo-small">
+                      <img *ngIf="u.fotoUrl; else initialsFallback" [src]="u.fotoUrl" alt="avatar" (error)="u.fotoUrl=null" />
+                      <ng-template #initialsFallback>
+                        <span class="user-photo-fallback">{{ (u.alias || u.nombre || 'U')[0] | uppercase }}</span>
+                      </ng-template>
+                    </span>
+                  </td>
+                  <td>{{ u.alias }}</td>
+                  <td>{{ u.nombre }}</td>
+                  <td>{{ u.email }}</td>
+                  <td>{{ u.role }}</td>
+                  <td>
+                    <span
+                      class="status-badge"
+                      [class.status-badge--green]="!u.blocked"
+                      [class.status-badge--red]="u.blocked"
+                      [title]="u.blocked ? 'Bloqueado' : 'Activo'">
+                      {{ u.blocked ? '🔒' : '🔓' }}
+                    </span>
+                  </td>
+                  <td class="vip-cell">
+                    <ng-container *ngIf="isUser(u); else noVipCell">
+                      <span
+                        class="status-badge"
+                        [class.status-badge--green]="!!u.vip"
+                        [class.status-badge--red]="!u.vip"
+                        [title]="u.vip ? 'VIP' : 'No VIP'">
+                        {{ u.vip ? '⭐' : '☆' }}
+                      </span>
+                    </ng-container>
+                    <ng-template #noVipCell>—</ng-template>
+                  </td>
+                  <td class="actions-cell">
+                    <button
+                      type="button"
+                      class="action-btn btn-edit"
+                      [disabled]="!(isCreator(u) || isAdmin(u) || isUser(u)) || isSuperAdmin(u)"
+                      (click)="editUser(u)"
+                      title="Editar">✏️</button>
+
+                    <button
+                      type="button"
+                      class="action-btn btn-block"
+                      [disabled]="!(isCreator(u) || isAdmin(u) || isUser(u)) || isSuperAdmin(u)"
+                      (click)="toggleBlockUser(u)"
+                      [title]="u.blocked ? 'Desbloquear' : 'Bloquear'">
+                      {{ u.blocked ? '🔓' : '🔒' }}
+                    </button>
+
+                    <button
+                      type="button"
+                      class="action-btn btn-consult"
+                      [disabled]="!(isCreator(u) || isAdmin(u) || isUser(u)) || isSuperAdmin(u)"
+                      (click)="deleteUser(u)"
+                      title="Eliminar">🗑️</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <div class="pager">
+              <button type="button" (click)="goto(page-1)" [disabled]="page<=1">«</button>
+              <span>📄 Página {{ page }} / {{ totalPages }}</span>
+              <button type="button" (click)="goto(page+1)" [disabled]="page>=totalPages">»</button>
+              <select [(ngModel)]="pageSize" (change)="goto(1)">
+                <option [ngValue]="5">5</option>
+                <option [ngValue]="10">10</option>
+                <option [ngValue]="20">20</option>
+                <option [ngValue]="50">50</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <div class="modal" *ngIf="showEditModal">
+          <div class="modal-content">
+            <button class="close" (click)="cancelEdit()" title="Cerrar">✖️</button>
+            <h3 style="margin-top:0">
+              ✏️ Editar
+              {{ editingUser?.role === 'ADMINISTRADOR' ? 'administrador'
+                : editingUser?.role === 'GESTOR_CONTENIDO' ? 'creador'
+                : 'usuario' }}
+            </h3>
+
+            <form #editForm="ngForm" (ngSubmit)="saveEdit(editForm)">
+              <div class="filter-section">
+                <label for="alias">Alias</label>
+                <input
+                  name="alias"
+                  [(ngModel)]="editModel.alias"
+                  required
+                  minlength="2"
+                  maxlength="50"
+                  (ngModelChange)="onAliasInput($event)"
+                />
+                <div class="help error" *ngIf="aliasTaken">⚠️ Alias en uso</div>
+              </div>
+              <div class="filter-section">
+                <label for="nombre">Nombre</label>
+                <input
+                  name="nombre"
+                  [(ngModel)]="editModel.nombre"
+                  required
+                  minlength="2"
+                  maxlength="100"
+                />
+              </div>
+              <div class="filter-section">
+                <label for="apellidos">Apellidos</label>
+                <input
+                  name="apellidos"
+                  [(ngModel)]="editModel.apellidos"
+                  maxlength="120"
+                />
+              </div>
+              <div class="filter-section" *ngIf="editingUser?.role === 'GESTOR_CONTENIDO'">
+                <label for="descripcion">Descripción</label>
+                <textarea
+                  name="descripcion"
+                  [(ngModel)]="editModel.descripcion"
+                  rows="3"
+                  maxlength="500"
+                  style="resize: vertical;"
+                ></textarea>
+              </div>
+              <div class="filter-section" *ngIf="editingUser?.role === 'GESTOR_CONTENIDO'">
+                <label for="especialidad">Especialidad</label>
+                <input
+                  name="especialidad"
+                  [(ngModel)]="editModel.especialidad"
+                  maxlength="120"
+                />
+              </div>
+              <div class="filter-section" *ngIf="editingUser?.role === 'USUARIO'">
+                <label for="fechaNac">Fecha de nacimiento</label>
+                <input
+                  type="date"
+                  name="fechaNac"
+                  [(ngModel)]="editModel.fechaNac"
+                  required
+                />
+              </div>
+              <div class="filter-section">
+                <label for="avatar">Avatar</label>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <div *ngIf="editModel.fotoPreviewUrl" style="display:flex;align-items:center;gap:10px">
+                    <img [src]="editModel.fotoPreviewUrl" alt="avatar preview" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid #444" />
+                  </div>
+                  <button class="action-btn btn-edit" type="button" (click)="openAvatarModal()">🖼️ Elegir avatar</button>
+                  <small *ngIf="!editModel.fotoPreviewUrl" style="color:#bbb">Sin avatar</small>
+                </div>
+              </div>
+
+              <div class="modal-actions" style="margin-top:20px">
+                <button class="action-btn btn-edit" type="submit" [disabled]="editForm.invalid || aliasTaken">💾 Guardar</button>
+                <button class="action-btn btn-consult" type="button" (click)="cancelEdit()">↩️ Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showAvatarPicker">
+          <div class="modal-content">
+            <button class="close" (click)="closeAvatarModal()" title="Cerrar">✖️</button>
+            <h3 style="margin-top:0">🖼️ Elige un avatar</h3>
+
+            <div style="display:grid;grid-template-columns:repeat(auto-fill, minmax(90px,1fr));gap:14px">
+              <button
+                *ngFor="let a of avatars"
+                type="button"
+                (click)="selectAvatar(a)"
+                style="background:none;border:none;cursor:pointer;padding:0"
+                title="Elegir"
+              >
+                <button
+                  type="button"
+                  style="background:none;border:none;cursor:pointer;padding:0"
+                  onfocus="this.querySelector('img').style.transform='scale(1.05)';"
+                  onblur="this.querySelector('img').style.transform='scale(1)';"
+                  title="Elegir"
+                >
+                  <img [src]="a" alt="avatar"
+                       style="width:90px;height:90px;border-radius:50%;object-fit:cover;border:2px solid #333;transition:transform .15s"
+                  />
+                </button>
+              </button>
+            </div>
+
+            <div class="modal-actions" style="margin-top:20px">
+              <button class="action-btn btn-consult" type="button" (click)="closeAvatarModal()">↩️ Cerrar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showConfirmModal">
+          <div class="modal-content">
+            <button class="close" (click)="cancelConfirm()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">❓ Confirmación</h3>
+
+            <p *ngIf="confirmKind==='block'">
+              ¿Seguro que quieres bloquear 🔒 a "<strong>{{ targetUser?.alias }}</strong>"?
+            </p>
+            <p *ngIf="confirmKind==='unblock'">
+              ¿Seguro que quieres desbloquear 🔓 a "<strong>{{ targetUser?.alias }}</strong>"?
+            </p>
+            <p *ngIf="confirmKind==='delete'">
+              ¿Seguro que quieres eliminar 🗑️ a "<strong>{{ targetUser?.alias }}</strong>"?
+            </p>
+
+            <div class="modal-actions" style="margin-top:20px">
+              <button class="action-btn btn-edit" type="button" (click)="confirmAction()">✅ Aceptar</button>
+              <button class="action-btn btn-consult" type="button" (click)="cancelConfirm()">↩️ Cancelar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showCreateModal">
+          <div class="modal-content">
+            <span class="close" (click)="cancelCreate()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">➕ Nuevo creador</h3>
+
+            <app-registro
+              [modoAdminCreador]="true"
+              (creado)="onCreadorCreado()">
+            </app-registro>
+
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showCreateAdminModal">
+          <div class="modal-content">
+            <span class="close" (click)="cancelCreateAdmin()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">➕ Nuevo administrador</h3>
+
+            <app-registro
+              [rolFijo]="'ADMINISTRADOR'"
+              [pedirPwdAdmin]="true"
+              (creado)="onAdminCreado()">
+            </app-registro>
+
+            <div class="modal-actions" style="margin-top:20px">
+              <button class="action-btn btn-consult" type="button" (click)="cancelCreateAdmin()">↩️ Cerrar</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal" *ngIf="showEditAdminModal">
+          <div class="modal-content">
+            <span class="close" (click)="cancelEditAdmin()" title="Cerrar">✖️</span>
+            <h3 style="margin-top:0">✏️ Editar administrador</h3>
+
+            <form #editAdminForm="ngForm" (ngSubmit)="saveAdminEdit(editAdminForm)">
+              <div class="filter-section">
+                <label for="alias">Alias</label>
+                <input
+                  name="alias"
+                  [(ngModel)]="adminEditModel.alias"
+                  required
+                  minlength="2"
+                  maxlength="50"
+                  (ngModelChange)="onAdminAliasInput($event)"
+                />
+                <div class="help error" *ngIf="adminAliasTaken">⚠️ Alias en uso</div>
+              </div>
+
+              <div class="filter-section">
+                <label for="nombre">Nombre</label>
+                <input
+                  name="nombre"
+                  [(ngModel)]="adminEditModel.nombre"
+                  required
+                  minlength="2"
+                  maxlength="100"
+                />
+              </div>
+
+              <div class="filter-section">
+                <label for="apellidos">Apellidos</label>
+                <input
+                  name="apellidos"
+                  [(ngModel)]="adminEditModel.apellidos"
+                  maxlength="120"
+                />
+              </div>
+
+              <div class="filter-section">
+                <label for="email">Email</label>
+                <input
+                  type="email"
+                  name="email"
+                  [(ngModel)]="adminEditModel.email"
+                  required
+                  maxlength="180"
+                />
+              </div>
+
+              <div class="filter-section">
+                <label for="avatar">Avatar</label>
+                <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+                  <div *ngIf="adminEditModel.fotoPreviewUrl" style="display:flex;align-items:center;gap:10px">
+                    <img [src]="adminEditModel.fotoPreviewUrl" alt="avatar preview" style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:1px solid #444" />
+                  </div>
+                  <button class="action-btn btn-edit" type="button" (click)="openAvatarModal()">🖼️ Elegir avatar</button>
+                  <small *ngIf="!adminEditModel.fotoPreviewUrl" style="color:#bbb">Sin avatar</small>
+                </div>
+              </div>
+
+              <div class="modal-actions" style="margin-top:20px">
+                <button
+                  class="action-btn btn-edit"
+                  type="submit"
+                  [disabled]="editAdminForm.invalid || adminAliasTaken"
+                >💾 Guardar</button>
+                <button class="action-btn btn-consult" type="button" (click)="cancelEditAdmin()">↩️ Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+      </main>
+    </div>
+
+  </div>
+</div>

@@ -1,0 +1,242 @@
+/* ==================== ESIMedia · Tema Netflix Full-Screen ==================== */
+
+/* Reset global */
+*, *::before, *::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #141414;
+  color: #f1f1f1;
+  font-family: 'Segoe UI', Helvetica, Arial, sans-serif;
+}
+
+/* Variables */
+:root {
+  --bg: #141414;
+  --panel: #1f1f1f;
+  --accent: #e50914;
+  --accent-hover: #ff1e28;
+  --ok: #1db954;
+  --warn: #ffb547;
+  --shadow: 0 8px 25px rgba(0,0,0,.35);
+  --radius: 10px;
+}
+
+/* App principal full viewport */
+.app {
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Topbar */
+.topbar {
+  background: linear-gradient(180deg, #1e1e1e 0%, #141414 100%);
+  height: 60px;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  box-shadow: var(--shadow);
+}
+.brand {
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-transform: uppercase;
+}
+.brand::before {
+  content: "";
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  background: var(--accent);
+  border-radius: 3px;
+  box-shadow: 0 0 10px rgba(229,9,20,.5);
+}
+.profile {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.avatar {
+  background: #333;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Main Layout */
+.main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 320px 1fr; /* más ancho el sidebar */
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  background: #1f1f1f;
+  padding: 20px;
+  overflow-y: auto;
+}
+.sidebar h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+.muted {
+  color: #aaa;
+  font-size: 0.9rem;
+}
+
+/* Campos de filtrado */
+.fld {
+  display: flex;
+  flex-direction: column;
+  margin-top: 14px;
+}
+.fld span {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.fld input,
+.fld select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #333;
+  border-radius: var(--radius);
+  background: #181818;
+  color: #fff;
+  font-size: 0.95rem;
+}
+.fld input:focus,
+.fld select:focus {
+  outline: 2px solid var(--accent);
+}
+.fld-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* Botones */
+.btn {
+  background: #333;
+  color: #fff;
+  padding: 10px 14px;
+  border: none;
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: background 0.3s;
+  font-weight: 600;
+}
+.btn:hover { background: #444; }
+.btn--primary {
+  background: var(--accent);
+}
+.btn--primary:hover {
+  background: var(--accent-hover);
+}
+
+/* Contenido */
+.content {
+  background: #181818;
+  overflow-y: auto;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Herramientas */
+.tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+/* Tabla */
+.table-wrap {
+  flex: 1;
+  overflow: auto;
+  background: #141414;
+  border-radius: var(--radius);
+  padding: 10px;
+}
+.users {
+  width: 100%;
+  border-collapse: collapse;
+}
+.users th, .users td {
+  padding: 12px;
+  text-align: left;
+}
+.users thead th {
+  background: #222;
+  position: sticky;
+  top: 0;
+}
+.users tr:nth-child(odd) { background: #1c1c1c; }
+.users tr:nth-child(even) { background: #161616; }
+
+/* Chip usuario */
+.chip {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.chip-avatar {
+  background: #333;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+}
+.chip-meta {
+  display: flex;
+  flex-direction: column;
+}
+.chip-name { font-weight: 700; }
+.chip-email { font-size: 0.85rem; color: #aaa; }
+
+/* Badges */
+.badge {
+  background: #333;
+  padding: 3px 9px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+}
+.badge--ok { background: var(--ok); color: #fff; }
+.badge--warn { background: var(--warn); color: #000; }
+
+/* Scrollbar */
+.sidebar::-webkit-scrollbar,
+.content::-webkit-scrollbar,
+.table-wrap::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+.sidebar::-webkit-scrollbar-thumb,
+.content::-webkit-scrollbar-thumb,
+.table-wrap::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+.sidebar::-webkit-scrollbar-track,
+.content::-webkit-scrollbar-track,
+.table-wrap::-webkit-scrollbar-track {
+  background: #1b1b1b;
+}

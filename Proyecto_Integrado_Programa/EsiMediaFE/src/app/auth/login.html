@@ -1,0 +1,137 @@
+<form
+  *ngIf="step === 'login'"
+  [formGroup]="form"
+  (ngSubmit)="submit()"
+  class="login-form"
+>
+  <label for="email">Email</label>
+  <input
+    id="email"
+    type="email"
+    formControlName="email"
+    placeholder="usuario@dominio.com"
+    autocomplete="username"
+    inputmode="email"
+  />
+  <div class="hint" *ngIf="form.controls.email.touched && form.controls.email.invalid">
+    Email inválido
+  </div>
+
+  <label for="password">Contraseña</label>
+  <div class="pwd-row">
+    <input
+      id="password"
+      [type]="showPwd ? 'text' : 'password'"
+      formControlName="password"
+      placeholder="••••••••"
+      inputmode="text"
+    />
+    <button
+      type="button"
+      class="toggle-eye-btn"
+      [attr.aria-pressed]="showPwd"
+      [title]="showPwd ? 'Ocultar contraseña' : 'Mostrar contraseña'"
+      (click)="showPwd = !showPwd"
+    >
+      <span *ngIf="!showPwd">👁️</span>
+      <span *ngIf="showPwd">🙈</span>
+    </button>
+  </div>
+  <div class="hint" *ngIf="form.controls.password.touched && form.controls.password.invalid">
+    Mínimo 6 caracteres
+  </div>
+
+  <button
+    type="submit"
+    class="btn-submit"
+    [disabled]="loading || form.invalid || retryAfterSeconds !== null"
+  >
+    {{ loading ? 'Accediendo…' : 'Entrar' }}
+  </button>
+
+  <p class="err" *ngIf="errorMsg && retryAfterSeconds === null">{{ errorMsg }}</p>
+
+  <p
+    class="hint"
+    *ngIf="remainingAttempts !== null && retryAfterSeconds === null"
+  >
+    Te quedan {{ remainingAttempts }} intento(s) antes de un bloqueo temporal.
+  </p>
+
+  <output
+    *ngIf="retryAfterSeconds !== null"
+    class="cooldown-box"
+    aria-live="polite"
+  >
+    <p class="err">
+      Demasiados intentos. Espera {{ countdown }} s para volver a intentarlo.
+    </p>
+    <progress
+      [value]="(retryAfterSeconds - countdown)"
+      [max]="retryAfterSeconds"
+      aria-label="Tiempo restante de bloqueo"
+    ></progress>
+  </output>
+</form>
+
+<form
+  *ngIf="step === 'mfa'"
+  [formGroup]="mfaForm"
+  (ngSubmit)="submitMfa()"
+  class="login-form"
+>
+  <h3>Verificación en dos pasos</h3>
+  <p class="hint">Método: <strong>{{ mfaMethod }}</strong></p>
+
+  <label for="code">Código</label>
+  <input
+    id="code"
+    type="text"
+    formControlName="code"
+    placeholder="Introduce el código"
+    autocomplete="one-time-code"
+    inputmode="numeric"
+  />
+
+  <button type="submit" class="btn-submit" [disabled]="loading || mfaForm.invalid">
+    {{ loading ? 'Verificando…' : 'Confirmar' }}
+  </button>
+
+  <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+  <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+</form>
+
+<form
+  *ngIf="step === 'captcha'"
+  [formGroup]="captchaForm"
+  (ngSubmit)="submitCaptcha()"
+  class="login-form"
+>
+  <h3>Verificación adicional</h3>
+
+  <div class="captcha-box">
+    <img [src]="captchaImage" alt="captcha" />
+  </div>
+
+  <label for="answer">Escribe lo que ves</label>
+  <input
+    id="answer"
+    type="text"
+    formControlName="answer"
+    placeholder="Respuesta"
+    autocomplete="off"
+    inputmode="text"
+  />
+
+  <button type="submit" class="btn-submit" [disabled]="loading || captchaForm.invalid">
+    {{ loading ? 'Verificando…' : 'Confirmar' }}
+  </button>
+
+  <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+  <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+</form>
+
+<div class="login-form" *ngIf="step === 'done'">
+  <h3>Acceso concedido</h3>
+  <p class="ok">¡Listo! Puedes continuar.</p>
+</div>

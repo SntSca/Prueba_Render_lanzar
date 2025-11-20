@@ -1,0 +1,54 @@
+<div class="auth-fullscreen">
+
+  <header class="auth-header">
+    <img src="assets/EsiMedia_Logo.png" class="header-logo" alt="Logo ESIMedia" />
+  </header>
+
+  <div class="auth-box-wrapper">
+    <div class="auth-left">
+
+
+
+      <div class="auth-left-content">
+
+       
+        <h1 class="hero-title">
+          Tu Universo de Streaming.<br>
+          <span>Sin límites.</span>
+        </h1>
+
+        <p>
+          <span class="highlight">Películas, series, documentales, música y pódcasts</span> reunidos en una plataforma
+          única.
+          Disfruta de contenidos en <span class="highlight">alta calidad</span> y en <span class="highlight">cualquier
+            momento</span>.
+          Personaliza tu experiencia, descubre <span class="highlight">nuevas recomendaciones</span> y comparte tus
+          <span class="highlight">favoritos</span> con tu comunidad.
+        </p>
+
+
+
+      </div>
+    </div>
+
+    <div class="auth-box">
+      <div class="login-content">
+        <router-outlet></router-outlet>
+
+        <div class="login-links">
+          <a routerLink="login" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Iniciar sesión</a>
+
+          <span class="sep">·</span>
+
+          <a routerLink="register" routerLinkActive="active">Crear cuenta</a>
+
+          <span class="sep">·</span>
+
+          <a routerLink="recover-password" routerLinkActive="active">Recuperar contraseña</a>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</div>

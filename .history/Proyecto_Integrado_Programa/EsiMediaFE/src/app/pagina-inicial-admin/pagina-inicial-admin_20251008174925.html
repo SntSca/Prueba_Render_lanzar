@@ -1,0 +1,92 @@
+
+<title>Gestión de Usuarios</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+  <input id="filters-toggle" class="filters-toggle" type="checkbox" aria-hidden="true" />
+
+  <!-- ── TOP BAR ── -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">Gestión de Usuarios</div>
+      <label for="filters-toggle" class="btn btn-filters" aria-label="Abrir filtros">Filtros</label>
+      <a class="profile" href="#" title="Ir a gestión de perfil">
+        <div class="avatar">U</div>
+        <div class="profile__meta">
+          <div class="email">admin@ejemplo.com</div>
+          <div class="role">Administrador</div>
+        </div>
+      </a>
+    </div>
+  </header>
+  <label for="filters-toggle" class="backdrop" aria-hidden="true"></label>
+
+  <!-- ── LAYOUT PRINCIPAL ── -->
+  <div class="main">
+    <!-- FILTRADO -->
+    <aside class="sidebar" aria-label="Filtrado">
+      <h2>Filtrado</h2>
+      <p class="muted">Búsqueda y filtros.</p>
+
+      <label class="fld">
+        <span>Nombre</span>
+        <input type="text" placeholder="Buscar por nombre" />
+      </label>
+      <label class="fld">
+        <span>Rol</span>
+        <select>
+          <option value="">Todos</option>
+          <option>Administrador</option>
+          <option>Usuario</option>
+          <option>Invitado</option>
+        </select>
+      </label>
+      <label class="fld">
+        <span>Fecha de registro</span>
+        <input type="date" />
+      </label>
+      <button class="btn">Ordenar por Nombre</button>
+    </aside>
+
+    <!-- CONTENIDO -->
+    <main class="content" aria-label="Listado de usuarios">
+      <table class="user-table">
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Fecha de registro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="avatar">A</div></td>
+            <td>Ana Pérez</td>
+            <td>ana@ejemplo.com</td>
+            <td>Usuario</td>
+            <td>2025-01-12</td>
+          </tr>
+          <tr>
+            <td><div class="avatar">J</div></td>
+            <td>Juan López</td>
+            <td>juan@ejemplo.com</td>
+            <td>Administrador</td>
+            <td>2024-11-03</td>
+          </tr>
+          <tr>
+            <td><div class="avatar">M</div></td>
+            <td>María Gómez</td>
+            <td>maria@ejemplo.com</td>
+            <td>Invitado</td>
+            <td>2025-05-20</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+</body>
+</html>

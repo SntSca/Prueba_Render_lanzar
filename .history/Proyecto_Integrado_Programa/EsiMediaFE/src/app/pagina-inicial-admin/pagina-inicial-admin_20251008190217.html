@@ -1,0 +1,168 @@
+
+
+  <input id="filters-toggle" class="filters-toggle" type="checkbox" aria-hidden="true" />
+
+  <!-- ── TOP BAR ── -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">Gestión de Usuarios</div>
+
+      <!-- Botón para abrir filtros en móvil -->
+      <label for="filters-toggle" class="btn btn-filters" aria-label="Abrir filtros">Filtros</label>
+
+      <a class="profile" href="#" title="Ir a gestión de perfil">
+        <div class="avatar">U</div>
+        <div class="profile__meta">
+          <div class="email">admin@esimedia.com</div>
+          <div class="role">ADMINISTRADOR</div>
+        </div>
+      </a>
+    </div>
+  </header>
+
+  <!-- Backdrop que cierra el drawer al tocar (móvil) -->
+  <label for="filters-toggle" class="backdrop" aria-hidden="true"></label>
+
+  <!-- ── LAYOUT PRINCIPAL ── -->
+  <div class="main">
+    <!-- FILTRADO -->
+    <aside class="sidebar" aria-label="Filtrado">
+      <h2>Filtrado</h2>
+      <p class="muted">Búsqueda y filtros.</p>
+
+      <label class="fld">
+        <span>Buscar por nombre</span>
+        <input id="searchName" type="text" placeholder="Ej. Ana, Juan..." />
+      </label>
+
+      <label class="fld">
+        <span>Rol</span>
+        <select id="roleSelect">
+          <option value="">Todos</option>
+          <option value="USUARIO">USUARIO</option>
+          <option value="GESTOR DE CONTENIDO">GESTOR DE CONTENIDO</option>
+          <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+        </select>
+      </label>
+
+      <div class="fld">
+        <span>Fecha de alta (rango)</span>
+        <div class="fld-row">
+          <input id="dateFrom" type="date" />
+          <input id="dateTo" type="date" />
+        </div>
+      </div>
+
+      <div class="fld">
+        <span>Ordenar</span>
+        <div class="fld-row">
+          <select id="sortBy">
+            <option value="name">Nombre</option>
+            <option value="role">Rol</option>
+            <option value="date">Fecha de alta</option>
+            <option value="plan">Plan</option>
+          </select>
+          <select id="sortDir">
+            <option value="asc">Asc</option>
+            <option value="desc">Desc</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fld" style="margin-top:16px">
+        <button id="applyBtn" class="btn">Aplicar</button>
+        <button id="clearBtn" class="btn" style="margin-left:8px">Limpiar</button>
+      </div>
+    </aside>
+
+    <!-- CONTENIDO (tabla) -->
+    <main class="content" aria-label="Listado de usuarios">
+      <div class="tools" aria-label="Acciones">
+        <button id="exportBtn" class="btn" title="Exportar visible a CSV">Exportar CSV</button>
+      </div>
+
+      <div class="table-wrap">
+        <table class="users" id="usersTable" aria-describedby="tabla-descr">
+          <caption id="tabla-descr" class="visually-hidden">
+            Tabla de usuarios con filtros y ordenación.
+          </caption>
+          <thead>
+            <tr>
+              <th scope="col">Usuario</th>
+              <th scope="col">Rol</th>
+              <th scope="col">Plan</th>
+              <th scope="col">Fecha de alta</th>
+              <th scope="col">Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Ejemplos -->
+            <tr data-name="Ana García" data-role="USUARIO" data-plan="ESTÁNDAR" data-date="2024-11-02">
+              <td>
+                <div class="chip">
+                  <div class="chip-avatar">A</div>
+                  <div class="chip-meta">
+                    <div class="chip-name">Ana García</div>
+                    <div class="chip-email">ana.garcia@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge">USUARIO</span></td>
+              <td><span class="badge">ESTÁNDAR</span></td>
+              <td data-sort="2024-11-02">02/11/2024</td>
+              <td><span class="badge badge--ok">Activo</span></td>
+            </tr>
+
+            <tr data-name="Juan Pérez" data-role="GESTOR DE CONTENIDO" data-plan="VIP" data-date="2025-01-15">
+              <td>
+                <div class="chip">
+                  <div class="chip-avatar">J</div>
+                  <div class="chip-meta">
+                    <div class="chip-name">Juan Pérez</div>
+                    <div class="chip-email">juan.perez@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge">GESTOR DE CONTENIDO</span></td>
+              <td><span class="badge">VIP</span></td>
+              <td data-sort="2025-01-15">15/01/2025</td>
+              <td><span class="badge badge--ok">Activo</span></td>
+            </tr>
+
+            <tr data-name="Lucía Mora" data-role="ADMINISTRADOR" data-plan="VIP" data-date="2023-07-07">
+              <td>
+                <div class="chip">
+                  <div class="chip-avatar">L</div>
+                  <div class="chip-meta">
+                    <div class="chip-name">Lucía Mora</div>
+                    <div class="chip-email">lucia.mora@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge">ADMINISTRADOR</span></td>
+              <td><span class="badge">VIP</span></td>
+              <td data-sort="2023-07-07">07/07/2023</td>
+              <td><span class="badge badge--warn">Bloqueado</span></td>
+            </tr>
+
+            <tr data-name="Sergio Díaz" data-role="USUARIO" data-plan="ESTÁNDAR" data-date="2025-03-28">
+              <td>
+                <div class="chip">
+                  <div class="chip-avatar">S</div>
+                  <div class="chip-meta">
+                    <div class="chip-name">Sergio Díaz</div>
+                    <div class="chip-email">sergio.diaz@example.com</div>
+                  </div>
+                </div>
+              </td>
+              <td><span class="badge">USUARIO</span></td>
+              <td><span class="badge">ESTÁNDAR</span></td>
+              <td data-sort="2025-03-28">28/03/2025</td>
+              <td><span class="badge badge--ok">Activo</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+</div>

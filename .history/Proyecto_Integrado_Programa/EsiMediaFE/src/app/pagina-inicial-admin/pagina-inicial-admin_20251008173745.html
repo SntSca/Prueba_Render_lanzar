@@ -1,0 +1,65 @@
+  <label class="fld">
+    <span>Nombre</span>
+    <input type="text" placeholder="Nombre del usuario…" />
+  </label>
+
+  <label class="fld">
+    <span>Fecha de registro</span>
+    <input type="date" />
+  </label>
+
+  <label class="fld">
+    <span>Tipo de usuario</span>
+    <select>
+      <option>Todos</option>
+      <option>Usuario</option>
+      <option>Gestor</option>
+      <option>Administrador</option>
+    </select>
+  </label>
+
+  <label class="fld">
+    <span>Ordenar alfabéticamente</span>
+    <select>
+      <option>Ascendente</option>
+      <option>Descendente</option>
+    </select>
+  </label>
+<!-- Removed invalid closing aside tag -->
+
+<!-- CONTENIDO: Tabla -->
+<main class="content" aria-label="Listado de usuarios">
+  <section class="row table-section">
+    <h3>Usuarios</h3>
+    <table class="users-table">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Email</th>
+          <th>Tipo</th>
+          <th>Fecha de registro</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Juan Pérez</td>
+          <td>juan@ejemplo.com</td>
+          <td>Usuario</td>
+          <td>2024-01-15</td>
+        </tr>
+        <tr>
+          <td>María López</td>
+          <td>maria@ejemplo.com</td>
+          <td>Gestor</td>
+          <td>2023-12-20</td>
+        </tr>
+        <tr>
+          <td>Admin Admin</td>
+          <td>admin@ejemplo.com</td>
+          <td>Administrador</td>
+          <td>2023-11-01</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</main>

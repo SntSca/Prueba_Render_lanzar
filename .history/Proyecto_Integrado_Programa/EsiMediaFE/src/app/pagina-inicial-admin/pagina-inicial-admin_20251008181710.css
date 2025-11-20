@@ -1,0 +1,59 @@
+/* === FORZAR SIN SCROLL GLOBAL Y AJUSTAR ALTURAS === */
+
+/* 1) Mata el scroll global del documento */
+html, body{
+  height:100vh;
+  margin:0;
+  overflow:clip !important;     /* mejor que hidden para evitar “saltos” */
+  overflow-x:hidden !important;
+}
+
+/* 2) La app llena la ventana y no genera scroll propio */
+.app{
+  height:100vh;
+  overflow:hidden;
+}
+
+/* 3) La topbar mide exactamente --topbar-h y su borde no suma altura */
+:root{ --topbar-h:72px; }
+.topbar{
+  height:var(--topbar-h);
+  box-sizing:border-box;        /* el borde entra en esos 72px */
+}
+.topbar__inner{
+  height:100%;                  /* antes 72px: podía sumar 2px extra */
+}
+
+/* 4) El área principal ocupa el resto de la ventana; quita margen vertical */
+.main{
+  height:calc(100vh - var(--topbar-h));
+  margin:0 auto !important;     /* antes 16px auto; quitamos el margen vertical */
+  padding:0 16px 16px;          /* sin padding arriba para no sumar */
+  overflow:hidden;
+  min-height:0;
+}
+
+/* 5) Sidebar y contenido llenan su contenedor sin forzar más altura */
+.sidebar{
+  height:100% !important;       /* sustituye tu calc(100vh - 72px) */
+  overflow:auto;
+  min-height:0;
+}
+.content{
+  height:100% !important;       /* sustituye tu calc(100vh - 72px) */
+  overflow:hidden;
+  min-height:0;
+  padding:18px;
+}
+
+/* 6) Solo la tabla puede scrollear */
+.table-wrap{
+  flex:1;
+  overflow:auto;
+  min-height:0;
+}
+
+/* 7) Topbar más pequeña en móvil: la resta se adapta sola */
+@media (max-width:600px){
+  :root{ --topbar-h:64px; }
+}

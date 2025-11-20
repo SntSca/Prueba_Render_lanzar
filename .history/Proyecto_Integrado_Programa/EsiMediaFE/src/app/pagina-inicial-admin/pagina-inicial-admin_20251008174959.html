@@ -1,0 +1,91 @@
+<div class="app">
+  <input id="filters-toggle" class="filters-toggle" type="checkbox" aria-hidden="true" />
+
+  <!-- ── TOP BAR ── -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">Gestión de Usuarios</div>
+      <label for="filters-toggle" class="btn btn-filters" aria-label="Abrir filtros">Filtros</label>
+      <a class="profile" href="#" title="Ir a gestión de perfil">
+        <div class="avatar">Foto</div>
+        <div class="profile__meta">
+          <div class="email">correo@ejemplo.com</div>
+          <div class="role">Administrador</div>
+        </div>
+      </a>
+    </div>
+  </header>
+
+  <!-- Backdrop que cierra el drawer al tocar (móvil) -->
+  <label for="filters-toggle" class="backdrop" aria-hidden="true"></label>
+
+  <!-- ── LAYOUT PRINCIPAL ── -->
+  <div class="main">
+    <!-- FILTRADO -->
+    <aside class="sidebar" aria-label="Filtrado">
+      <h2>Filtros</h2>
+      <p class="muted">Buscar y ordenar usuarios</p>
+      
+      <label class="fld">
+        <span>Nombre</span>
+        <input type="text" placeholder="Buscar por nombre…" />
+      </label>
+      
+      <label class="fld">
+        <span>Rol</span>
+        <select>
+          <option>Todos</option>
+          <option>Administrador</option>
+          <option>Editor</option>
+          <option>Usuario</option>
+        </select>
+      </label>
+      
+      <label class="fld">
+        <span>Fecha de registro</span>
+        <input type="date" />
+      </label>
+      
+      <button class="btn fld">Ordenar por Nombre</button>
+    </aside>
+
+    <!-- CONTENIDO (tabla de usuarios) -->
+    <main class="content" aria-label="Listado de usuarios">
+      <table class="users-table">
+        <thead>
+          <tr>
+            <th>Avatar</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol</th>
+            <th>Fecha de registro</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><div class="avatar">A</div></td>
+            <td>Juan Pérez</td>
+            <td>juan@ejemplo.com</td>
+            <td>Administrador</td>
+            <td>2025-01-10</td>
+          </tr>
+          <tr>
+            <td><div class="avatar">M</div></td>
+            <td>María López</td>
+            <td>maria@ejemplo.com</td>
+            <td>Editor</td>
+            <td>2024-11-05</td>
+          </tr>
+          <tr>
+            <td><div class="avatar">C</div></td>
+            <td>Carlos Díaz</td>
+            <td>carlos@ejemplo.com</td>
+            <td>Usuario</td>
+            <td>2025-03-22</td>
+          </tr>
+        </tbody>
+      </table>
+    </main>
+  </div>
+</div>
+

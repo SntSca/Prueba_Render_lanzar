@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.programa</groupId>
+  <artifactId>backend</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <modules>
+    <module>usersbe</module>
+    <module>EsiMediaContenidosG03</module>
+  </modules>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>0.8.12</version>
+        <executions>
+          <execution>
+            <id>merge</id>
+            <goals><goal>merge</goal></goals>
+            <phase>verify</phase>
+            <configuration>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.basedir}/usersbe/target</directory>
+                  <includes><include>jacoco.exec</include></includes>
+                </fileSet>
+                <fileSet>
+                  <directory>${project.basedir}/EsiMediaContenidosG03/target</directory>
+                  <includes><include>jacoco.exec</include></includes>
+                </fileSet>
+              </fileSets>
+              <destFile>${project.basedir}/target/jacoco-combined.exec</destFile>
+            </configuration>
+          </execution>
+          <execution>
+            <id>report-aggregate</id>
+            <phase>verify</phase>
+            <goals><goal>report-aggregate</goal></goals>
+            <configuration>
+              <dataFile>${project.basedir}/target/jacoco-combined.exec</dataFile>
+              <outputDirectory>${project.basedir}/target/site/jacoco-aggregate</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
+  </build>
+</project>

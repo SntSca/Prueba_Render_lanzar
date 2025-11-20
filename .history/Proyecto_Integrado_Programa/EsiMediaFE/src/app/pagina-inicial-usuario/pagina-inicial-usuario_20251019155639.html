@@ -1,0 +1,163 @@
+<div class="ro-banner" *ngIf="readOnly">
+  <span>📖 Modo lectura activado — no puedes interactuar con esta página.</span>
+  <button
+    class="btn-salir-ro"
+    *ngIf="fromAdmin"
+    type="button"
+    (click)="salirModoLectura()"
+    aria-label="Salir del modo lectura"
+  >
+    Salir del modo lectura
+  </button>
+</div>
+
+<div class="ro-wrap" [class.readonly]="readOnly">
+
+  <!-- Header de usuario -->
+  <div class="usuario-header">
+    <div class="usuario-info">
+      <div class="ava">
+        <img *ngIf="userAvatar" [src]="userAvatar" alt="Avatar" class="avatar-img">
+        <span *ngIf="!userAvatar" class="avatar-initials">{{ userInitials }}</span>
+      </div>
+      <div class="datos">
+        <div class="nombre-wrap">
+          <div class="nombre">{{ userName }}</div>
+          <button class="edit-inline" type="button" (click)="toggleEditar()" title="Editar perfil">✏️</button>
+        </div>
+        <div class="email">{{ userEmail }}</div>
+      </div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-cerrar" (click)="CerrarSesion()">Cerrar sesión</button>
+    </div>
+  </div>
+
+  <!-- Promo -->
+  <div class="promo-banner" aria-label="Contenido próximamente">
+    <div class="promo-track">
+      <span class="promo-text">Contenido Multimedia Próximamente... EsiMeida </span>
+      <span class="promo-text">Contenido Multimedia Próximamente... EsiMeida </span>
+      <span class="promo-text">Contenido Multimedia Próximamente... EsiMeida </span>
+    </div>
+  </div>
+
+  <!-- Overlay del modal -->
+  <button class="overlay" *ngIf="editOpen" (click)="cancelarEditar()"></button>
+
+  <!-- Panel de edición -->
+  <div class="edit-panel modal" [class.open]="editOpen" (click)="$event.stopPropagation()" (keydown)="handleKeyDown($event)">
+    <h3>Editar perfil</h3>
+
+    <form (ngSubmit)="guardarCambios()">
+
+      <div class="row">
+        <label class="label-lock" for="email_ro">
+          Email
+          <span class="lock" title="Campo bloqueado">🔒</span>
+          <span class="badge-ro">bloqueado</span>
+        </label>
+        <input id="email_ro" type="text" [ngModel]="userEmail" name="email_ro" class="ro" readonly />
+      </div>
+
+      <div class="row">
+        <label class="label-lock" for="fechaNac_ro">
+          Fecha de nacimiento
+          <span class="lock" title="Campo bloqueado">🔒</span>
+          <span class="badge-ro">bloqueado</span>
+        </label>
+        <input type="date" [ngModel]="model.fechaNac" name="fechaNac_ro" class="ro" readonly />
+      </div>
+      <div class="row">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" [(ngModel)]="model.nombre" name="nombre" />
+      </div>
+
+      <div class="row">
+        <label for="apellidos">Apellidos</label>
+        <input id="apellidos" type="text" [(ngModel)]="model.apellidos" name="apellidos" />
+      </div>
+
+      <div class="row">
+        <label for="alias">Alias</label>
+        <input id="alias" type="text" [(ngModel)]="model.alias" name="alias" />
+      </div>
+
+      <div class="row">
+        <label>VIP <input type="checkbox" [(ngModel)]="model.vip" name="vip" /></label>
+      </div>
+      <div class="Avatar">
+        <label for="elegirAvatar">Avatar</label>
+        <button id="elegirAvatar" type="button" class="btn" (click)="openAvatarModal()">Elegir Avatar</button>
+        <div *ngIf="selectedAvatar" class="selected-avatar-card">
+          <img [src]="selectedAvatar" alt="avatar" class="selected-avatar-card__img">
+          <div class="selected-avatar-card__text">
+            <b>Avatar seleccionado</b>
+            <small>Puedes cambiarlo cuando quieras</small>
+          </div>
+        </div>
+      </div>
+      <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+      <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+      <div class="actions">
+        <button class="btn-darseBaja" type="button" (click)="DarDeBaja()">Eliminar Cuenta</button>
+        <button type="button" class="btn-out" (click)="cancelarEditar()">Cancelar</button>
+        <button type="submit" class="btn-primario" [disabled]="saving">
+          {{ saving ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+
+    </form>
+  </div>
+  <div class="ro-overlay" *ngIf="readOnly" aria-hidden="true" style="pointer-events: none;"></div>
+
+  <div
+    *ngIf="showAvatarModal"
+    class="avatar-modal"
+    (click)="closeAvatarModal()"
+    (keydown.enter)="closeAvatarModal()"
+    (keydown.space)="closeAvatarModal()"
+    (keydown.escape)="closeAvatarModal()">
+
+    <dialog
+      class="avatar-modal-content"
+      open
+      aria-labelledby="avatarTitle"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()">
+
+      <h2 id="avatarTitle" class="avatar-modal-title">Seleccionar avatar</h2>
+
+      <div class="avatar-preview" *ngIf="selectedAvatar; else noPreview">
+        <img [src]="selectedAvatar" alt="avatar seleccionado">
+        <div class="avatar-preview__caption">Seleccionado</div>
+      </div>
+      <ng-template #noPreview>
+        <div class="avatar-preview avatar-preview--placeholder">
+          <span>Selecciona uno de la galería</span>
+        </div>
+      </ng-template>
+
+      <ul class="avatar-grid">
+        <li *ngFor="let avatar of avatars"
+            class="avatar-option"
+            [class.selected]="selectedAvatar === avatar">
+          <button type="button"
+                  (click)="selectAvatar(avatar)"
+                  (keydown.enter)="selectAvatar(avatar)"
+                  [attr.aria-pressed]="selectedAvatar === avatar"
+                  [attr.aria-label]="'Elegir avatar ' + avatar">
+            <img [src]="avatar" alt="avatar">
+            <span class="avatar-check">✓</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="avatar-modal-actions">
+        <button class="btn btn--ghost" type="button" (click)="closeAvatarModal()">Cancelar</button>
+      </div>
+    </dialog>
+
+  </div>
+</div>

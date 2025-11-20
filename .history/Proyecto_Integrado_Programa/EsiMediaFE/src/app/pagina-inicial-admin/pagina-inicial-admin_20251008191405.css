@@ -1,0 +1,133 @@
+/* ── Reset y base ── */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;  /* Evita scroll */
+  font-family: Arial, sans-serif;
+}
+
+/* ── Contenedor principal ── */
+.app {
+  height: 100vh;           /* altura de la ventana */
+  width: 100vw;            /* ancho de la ventana */
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;        /* nada puede salirse */
+  background: linear-gradient(135deg, #4e54c8, #8f94fb); /* ejemplo de fondo */
+  color: #fff;
+  font-size: 16px;
+}
+
+/* ── Topbar ── */
+.topbar {
+  flex: 0 0 60px;          /* altura fija */
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+  background-color: rgba(0,0,0,0.4);
+}
+
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.brand {
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+/* ── Main layout ── */
+.main {
+  display: flex;
+  flex: 1;                  /* ocupa el resto de la ventana */
+  overflow: hidden;         /* bloquea scroll interno */
+}
+
+/* ── Sidebar ── */
+.sidebar {
+  flex: 0 0 250px;          /* ancho fijo */
+  padding: 20px;
+  background-color: rgba(0,0,0,0.3);
+  overflow-y: auto;         /* scroll solo si hay contenido extra */
+}
+
+/* ── Contenido principal ── */
+.content {
+  flex: 1;
+  padding: 20px;
+  overflow: auto;           /* scroll si tabla crece */
+  background-color: rgba(255,255,255,0.1);
+  border-left: 1px solid rgba(255,255,255,0.2);
+}
+
+/* ── Tablas y chips ── */
+.table-wrap {
+  max-height: 100%;
+  overflow-y: auto;         /* scroll interno si tabla es grande */
+}
+
+.users {
+  width: 100%;
+  border-collapse: collapse;
+  color: #fff;
+}
+
+.users th, .users td {
+  padding: 8px;
+  text-align: left;
+  border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+
+/* ── Badges ── */
+.badge {
+  padding: 2px 6px;
+  border-radius: 4px;
+  background-color: #333;
+  color: #fff;
+}
+
+.badge--ok { background-color: #4caf50; }
+.badge--warn { background-color: #f44336; }
+
+/* ── Inputs y selects ── */
+.fld input, .fld select {
+  width: 100%;
+  padding: 6px;
+  border-radius: 4px;
+  border: none;
+  margin-top: 4px;
+}
+
+/* ── Botones ── */
+.btn {
+  padding: 6px 12px;
+  border: none;
+  border-radius: 4px;
+  background-color: #6c63ff;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn:hover {
+  background-color: #5848c2;
+}
+
+/* ── Scroll personalizado opcional ── */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(255,255,255,0.3);
+  border-radius: 4px;
+}
+

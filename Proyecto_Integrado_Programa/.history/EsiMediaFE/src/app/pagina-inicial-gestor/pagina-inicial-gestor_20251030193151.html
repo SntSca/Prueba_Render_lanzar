@@ -1,0 +1,768 @@
+<div class="full-screen-wrapper">
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <ul class="navbar-options">
+          <a routerLink="/admin/contenidos"
+             routerLinkActive="active"
+             role="tab"
+             aria-current="page"
+             aria-selected="true">Gestión de Contenidos</a>
+      </ul>
+
+      <div class="user-panel">
+        <div class="user-photo" [title]="userName">
+          <img *ngIf="userAvatarUrl; else initialsTpl"
+               [src]="userAvatarUrl"
+               alt="Avatar de {{ userName }}"
+               loading="lazy"
+               decoding="async"
+               referrerpolicy="no-referrer"
+               (error)="onAvatarError()" />
+          <ng-template #initialsTpl>
+            <span class="user-photo-fallback">{{ userInitials }}</span>
+          </ng-template>
+        </div>
+
+        <div class="user-info">
+          <div class="user-name-row">
+            <div class="user-name">{{ userName }}</div>
+            <button class="edit-inline" type="button" (click)="toggleEditar()" title="Editar perfil" aria-label="Editar perfil">✏️</button>
+          </div>
+          <div class="user-email">{{ userEmail }}</div>
+          <div class="user-role">{{ userRole }} de {{ userTipoContenido || '—' }}</div>
+        </div>
+
+        <button class="logout-btn" (click)="cerrarSesion()">Cerrar Sesión</button>
+      </div>
+    </nav>
+
+    <div class="main-container">
+      <aside class="filter-panel">
+        <h3>Filtros <span class="tag-construccion">🚧 En construcción</span></h3>
+        <p class="hint-muted">Próximamente podrás filtrar los contenidos desde aquí.</p>
+      </aside>
+
+      <main class="content-area">
+        <div class="toolbar">
+          <h2 class="page-title">Contenidos</h2>
+          <div class="toolbar-actions">
+            <button class="secondary-btn" type="button" (click)="loadContenidos()">⟳ Recargar</button>
+              <button class="secondary-btn" type="button" (click)="abrirCrearLista()" aria-label="Crear lista pública">🗂️ Crear lista pública</button>
+            <button class="primary-btn" type="button" (click)="abrirCrear()">➕ Añadir contenido</button>
+          </div>
+        </div>
+
+        <section>
+          <div *ngIf="loadingList" class="helper-text">Cargando contenidos…</div>
+
+          <table class="content-table" *ngIf="!loadingList && contenidosList?.length; else emptyList">
+            <caption class="sr-only">
+              Listado de contenidos con título, autor, descripción, tags, tipo, visibilidad y acciones
+            </caption>
+            <colgroup>
+              <col style="width:72px">
+              <col style="width:145px">
+              <col style="width:150px">
+              <col style="width:250px" min-width="20px">
+              <col style="width:150px">
+              <col style="width:110px">
+              <col style="width:120px">
+              <col style="width:190px">
+            </colgroup>
+            <thead>
+              <tr>
+                <th scope="col" style="width: 84px;">Foto</th>
+                <th scope="col">Nombre</th>
+                <th scope="col">Autor</th>
+                <th scope="col">Descripción</th>
+                <th scope="col">Tags</th>
+                <th scope="col" style="width: 90px;">Tipo</th>
+                <th scope="col" style="width: 120px;">Visible</th>
+                <th scope="col" style="width: 190px;">Acciones</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let c of contenidosList; trackBy: trackContenido">
+                <td>
+                  <div class="thumb">
+                    <img *ngIf="c.imagen; else noImg"
+                         [src]="c.imagen"
+                         [alt]="'Poster de ' + (c.titulo || 'contenido')"
+                         loading="lazy"
+                         decoding="async"
+                         referrerpolicy="no-referrer" />
+                    <ng-template #noImg><div class="thumb-fallback" aria-hidden="true">—</div></ng-template>
+                  </div>
+                </td>
+
+                <td>{{ c.titulo }}</td>
+                <td class="muted">{{ c.userEmail || 'Desconocido' }}</td>
+                <td class="muted">{{ c.descripcion || 'Sin descripción' }}</td>
+
+                <td>
+                  <div class="tags" *ngIf="c.tags?.length">
+                    <span class="tag" *ngFor="let t of c.tags">{{ t }}</span>
+                  </div>
+                </td>
+
+                <td>
+                  <span class="chip"
+                        [class.chip--audio]="c.tipo==='AUDIO'"
+                        [class.chip--video]="c.tipo==='VIDEO'">
+                    {{ c.tipo==='AUDIO' ? '🎵 AUDIO' : '🎬 VIDEO' }}
+                  </span>
+                </td>
+
+                <td>
+                  <button class="action-btn"
+                          [class.danger]="!c.visible"
+                          (click)="onToggleVisible(c)"
+                          [title]="c.visible ? 'Ocultar' : 'Mostrar'"
+                          [attr.aria-pressed]="c.visible"
+                          [attr.aria-label]="c.visible ? ('Ocultar contenido ' + (c.titulo || '')) : ('Mostrar contenido ' + (c.titulo || ''))">
+                    <span aria-hidden="true">{{ c.visible ? '👁️' : '🙈' }}</span>
+                  </button>
+                </td>
+
+                <td class="actions-cell">
+                  <div class="actions-wrapper">
+                    <button class="action-btn" (click)="onView(c)" aria-label="Ver detalles del contenido">🔎</button>
+                    <button class="action-btn" (click)="onEditClick(c)" aria-label="Editar contenido">✏️</button>
+                    <button class="action-btn danger" (click)="onDeleteClick(c)" aria-label="Eliminar contenido">🗑️</button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <ng-template #emptyList>
+            <div class="placeholder-content">
+              <p>No hay contenidos todavía. Crea el primero con “Añadir contenido”.</p>
+            </div>
+          </ng-template>
+        </section>
+
+        <!-- MODAL CREAR -->
+        <div *ngIf="crearAbierto" class="modal" role="dialog" aria-modal="true" aria-labelledby="crearTitulo">
+          <div class="modal-backdrop"></div>
+          <div class="modal-content" tabindex="-1">
+            <button class="modal-close" (click)="cerrarCrear()" aria-label="Cerrar">&times;</button>
+            <h3 id="crearTitulo">Nuevo contenido de {{ userTipoContenido || '...' }}</h3>
+
+            <form #formSubida="ngForm" (ngSubmit)="onSubmit(formSubida)" novalidate class="upload-form">
+              <div class="form-row">
+                <label for="titulo">Título <span class="req">*</span></label>
+                <input id="titulo" type="text" name="titulo" [(ngModel)]="nuevo.titulo" #tituloModel="ngModel" required
+                       placeholder="p. ej., Interestelar"
+                       [class.input-error]="tituloModel.invalid && (tituloModel.dirty || tituloModel.touched)" />
+              </div>
+
+              <div class="form-row">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" name="descripcion" [(ngModel)]="nuevo.descripcion" rows="3"
+                          placeholder="Breve descripción…"></textarea>
+              </div>
+
+              <div class="form-row">
+                <label for="imagen">Imagen (opcional)</label>
+                <input id="imagen" type="text" name="imagen" [(ngModel)]="nuevo.imagen" placeholder="URL o ruta local" />
+                <div class="image-preview" *ngIf="nuevo.imagen">
+                  <img [src]="nuevo.imagen" alt="Vista previa" loading="lazy" decoding="async" referrerpolicy="no-referrer"
+                       (error)="imgError = true" (load)="imgError = false" />
+                  <div *ngIf="imgError" class="image-fallback">No se pudo cargar la imagen</div>
+                  <button type="button" class="clear-img-btn" (click)="clearImage()">×</button>
+                </div>
+              </div>
+
+              <div *ngIf="userTipoContenido === 'AUDIO'" class="form-row">
+                <label for="ficheroAudio">Fichero de audio <span class="req">*</span></label>
+                <input id="ficheroAudio" type="text" name="ficheroAudio"
+                       [(ngModel)]="nuevo.ficheroAudio" required placeholder="/ruta/audio.mp3" />
+              </div>
+
+              <div *ngIf="userTipoContenido === 'VIDEO'">
+                <div class="form-row">
+                  <label for="urlVideo">URL del vídeo <span class="req">*</span></label>
+                  <input id="urlVideo" type="text" name="urlVideo" [(ngModel)]="nuevo.urlVideo" required placeholder="https://..." />
+                </div>
+
+                <div class="form-row">
+                  <label for="resolucion">Resolución</label>
+                  <select id="resolucion" name="resolucion" [(ngModel)]="nuevo.resolucion">
+                    <option value="">Seleccionar</option>
+                    <option value="720p">720p</option>
+                    <option value="1080p">1080p</option>
+                    <option value="4K">4K</option>
+                  </select>
+                  <p class="err" *ngIf="nuevo.resolucion === '4K' && nuevo.vip === 'no'">
+                    ⚠️ Solo los contenidos VIP pueden tener resolución 4K.
+                  </p>
+                </div>
+              </div>
+
+              <!-- TAGS accesible -->
+              <label for="tagsDropdownBtn">Tags <span class="req">*</span></label>
+              <div class="tags-dropdown">
+                <button id="tagsDropdownBtn"
+                        class="dropdown-btn"
+                        type="button"
+                        (click)="toggleDropdown()"
+                        [class.active]="dropdownOpen"
+                        aria-haspopup="listbox"
+                        [attr.aria-expanded]="dropdownOpen"
+                        aria-controls="tagsListbox">
+                  {{ tagsArray.length ? tagsArray.join(', ') : 'Selecciona tags' }}
+                  <span class="arrow">▼</span>
+                </button>
+
+                <div id="tagsListbox"
+                     class="dropdown-content"
+                     *ngIf="dropdownOpen"
+                     role="listbox"
+                     aria-multiselectable="true">
+                  <div class="tag-category">
+                    <ng-container *ngIf="userTipoContenido === 'VIDEO'">
+                      <label *ngFor="let tag of availableTags.video"
+                             class="tag-option"
+                             role="option"
+                             [attr.aria-selected]="isSelected(tag)">
+                        <input type="checkbox" [checked]="isSelected(tag)" (change)="toggleTag(tag)" /> {{ tag }}
+                      </label>
+                    </ng-container>
+                    <ng-container *ngIf="userTipoContenido === 'AUDIO'">
+                      <label *ngFor="let tag of availableTags.audio"
+                             class="tag-option"
+                             role="option"
+                             [attr.aria-selected]="isSelected(tag)">
+                        <input type="checkbox" [checked]="isSelected(tag)" (change)="toggleTag(tag)" /> {{ tag }}
+                      </label>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <p class="err" *ngIf="tagsInvalid && formSubmitted">Debes seleccionar al menos un tag.</p>
+
+              <div class="form-row">
+                <label for="duracionMinutos">Duración (minutos) <span class="req">*</span></label>
+                <input id="duracionMinutos" type="number" name="duracionMinutos"
+                       [(ngModel)]="nuevo.duracionMinutos" required min="1" placeholder="Ej. 120" />
+              </div>
+
+              <div class="form-row">
+                <label for="disponibleHasta">Disponible hasta</label>
+                <input
+                  id="disponibleHasta"
+                  type="date"
+                  name="disponibleHasta"
+                  [(ngModel)]="nuevo.disponibleHasta"
+                  #disponibleHastaModel="ngModel"
+                  [min]="fechaHoy"
+                  (change)="validarDisponibleHasta()"
+                />
+                <p class="err" *ngIf="disponibleHastaInvalido">La fecha debe ser hoy o posterior.</p>
+              </div>
+            <div class="form-row">
+              <label>Listas</label>
+              <div class="tags-dropdown">
+                <button type="button"
+                        class="dropdown-btn"
+                        (click)="listasDropdownOpen = !listasDropdownOpen"
+                        [class.active]="listasDropdownOpen"
+                        aria-haspopup="listbox"
+                        [attr.aria-expanded]="listasDropdownOpen"
+                        aria-controls="listasListbox">
+                  {{ getListaNombresSeleccionadas() }}
+                  <span class="arrow">▼</span>
+                </button>
+
+                <div id="listasListbox"
+                    class="dropdown-content"
+                    *ngIf="listasDropdownOpen"
+                    role="listbox"
+                    aria-multiselectable="true">
+                  <label *ngFor="let lista of listasPublicas"
+                        class="tag-option"
+                        role="option"
+                        [attr.aria-selected]="isListaSelected(lista.id)">
+                    <input type="checkbox"
+                          [checked]="isListaSelected(lista.id)"
+                          (change)="toggleLista(lista.id)" />
+                    {{ lista.nombre }}
+                  </label>
+                </div>
+              </div>
+              <div class="tags mt-2" *ngIf="listasSeleccionadas.length">
+                <span class="tag" *ngFor="let id of listasSeleccionadas">
+                  {{ getListaNombre(id) }}
+                  <button type="button" class="remove-tag" (click)="toggleLista(id)">×</button>
+                </span>
+              </div>
+            </div>
+
+
+              <div class="horizontal-selects">
+                <div class="toggle-group">
+                  <span>VIP:</span>
+                  <button type="button" [class.active]="nuevo.vip === 'si'" (click)="nuevo.vip = 'si'">👑</button>
+                  <button type="button" [class.active]="nuevo.vip === 'no'" (click)="nuevo.vip = 'no'">—</button>
+                </div>
+
+                <div class="toggle-group">
+                  <span>Visible:</span>
+                  <button type="button" [class.active]="nuevo.visible === 'si'" (click)="nuevo.visible = 'si'">👁️</button>
+                  <button type="button" [class.active]="nuevo.visible === 'no'" (click)="nuevo.visible = 'no'">🙈</button>
+                </div>
+
+                <div class="toggle-group">
+                  <label for="restringidoEdad">🔞</label>
+                  <select id="restringidoEdad" [(ngModel)]="nuevo.restringidoEdad" name="restringidoEdad" required>
+                    <option value="" disabled>Selecciona edad</option>
+                    <option *ngFor="let edad of edadesDisponibles" [value]="edad">{{ edad }}+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" [disabled]="loading" class="primary-btn">
+                  {{ loading ? 'Subiendo...' : 'Guardar' }}
+                </button>
+                <button type="button" class="secondary-btn" (click)="cerrarCrear()" [disabled]="loading">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- MODAL EDITAR CONTENIDO -->
+        <div *ngIf="editContentOpen" class="modal" role="dialog" aria-modal="true" aria-labelledby="editarTitulo">
+          <div class="modal-backdrop" (click)="closeEdit()" (keydown)="handleKeyDown($event)"></div>
+          <div class="modal-content" tabindex="-1">
+            <button class="modal-close" (click)="closeEdit()" aria-label="Cerrar">&times;</button>
+            <h3 id="editarTitulo">Editar contenido</h3>
+
+            <form class="upload-form" (ngSubmit)="saveEdit()">
+              <div class="form-row">
+                <label for="tituloEdit">Título <span class="req">*</span></label>
+                <input id="tituloEdit" type="text" name="titulo" [(ngModel)]="cambios.titulo" required />
+              </div>
+
+              <div class="form-row">
+                <label for="descripcionEdit">Descripción</label>
+                <textarea id="descripcionEdit" name="descripcion" [(ngModel)]="cambios.descripcion" rows="3"></textarea>
+              </div>
+
+              <div class="form-row">
+                <label for="imagenEdit">Imagen (opcional)</label>
+                <input id="imagenEdit" type="text" name="imagen" [(ngModel)]="cambios.imagen" placeholder="URL o ruta local" />
+                <div class="image-preview" *ngIf="cambios.imagen">
+                  <img [src]="cambios.imagen" alt="Vista previa" loading="lazy" decoding="async" referrerpolicy="no-referrer"
+                       (error)="imgError = true" (load)="imgError = false" />
+                  <div *ngIf="imgError" class="image-fallback">No se pudo cargar la imagen</div>
+                  <button type="button" class="clear-img-btn" (click)="cambios.imagen = null">×</button>
+                </div>
+              </div>
+              <label for="tagsDropdownBtn">Tags <span class="req">*</span></label>
+              <div class="tags-dropdown">
+                <button id="tagsDropdownBtn"
+                        class="dropdown-btn"
+                        type="button"
+                        (click)="toggleDropdown()"
+                        [class.active]="dropdownOpen"
+                        aria-haspopup="listbox"
+                        [attr.aria-expanded]="dropdownOpen"
+                        aria-controls="tagsListbox">
+                  {{ tagsArray.length ? tagsArray.join(', ') : 'Selecciona tags' }}
+                  <span class="arrow">▼</span>
+                </button>
+
+                <div id="tagsListbox"
+                    class="dropdown-content"
+                    *ngIf="dropdownOpen"
+                    role="listbox"
+                    aria-multiselectable="true">
+                  <div class="tag-category">
+                    <ng-container *ngIf="userTipoContenido === 'VIDEO'">
+                      <label *ngFor="let tag of availableTags.video"
+                            class="tag-option"
+                            role="option"
+                            [attr.aria-selected]="isSelected(tag)">
+                        <input type="checkbox" [checked]="isSelected(tag)" (change)="toggleTag(tag)" /> {{ tag }}
+                      </label>
+                    </ng-container>
+                    <ng-container *ngIf="userTipoContenido === 'AUDIO'">
+                      <label *ngFor="let tag of availableTags.audio"
+                            class="tag-option"
+                            role="option"
+                            [attr.aria-selected]="isSelected(tag)">
+                        <input type="checkbox" [checked]="isSelected(tag)" (change)="toggleTag(tag)" /> {{ tag }}
+                      </label>
+                    </ng-container>
+                  </div>
+                </div>
+              </div>
+              <p class="err" *ngIf="tagsInvalid && formSubmitted">Debes seleccionar al menos un tag.</p>
+
+              <div class="form-row">
+                <label for="disponibleHastaEdit">Disponible hasta</label>
+                <input
+                  id="disponibleHastaEdit"
+                  type="date"
+                  name="disponibleHasta"
+                  [(ngModel)]="cambios.disponibleHasta"
+                  #disponibleHastaModel="ngModel"
+                  [min]="fechaHoy"
+                  (change)="validarDisponibleHasta()"
+                />
+                <p class="err" *ngIf="disponibleHastaInvalido">La fecha debe ser hoy o posterior.</p>
+              </div>
+
+            <div class="form-row">
+              <label>Listas</label>
+              <div class="tags-dropdown">
+                <button type="button"
+                        class="dropdown-btn"
+                        (click)="listasDropdownOpen = !listasDropdownOpen"
+                        [class.active]="listasDropdownOpen"
+                        aria-haspopup="listbox"
+                        [attr.aria-expanded]="listasDropdownOpen"
+                        aria-controls="listasListbox">
+                  {{ getListaNombresSeleccionadas() }}
+                  <span class="arrow">▼</span>
+                </button>
+
+                <div id="listasListbox"
+                    class="dropdown-content"
+                    *ngIf="listasDropdownOpen"
+                    role="listbox"
+                    aria-multiselectable="true">
+                  <label *ngFor="let lista of listasPublicas"
+                        class="tag-option"
+                        role="option"
+                        [attr.aria-selected]="isListaSelected(lista.id)">
+                    <input type="checkbox"
+                          [checked]="isListaSelected(lista.id)"
+                          (change)="toggleLista(lista.id)" />
+                    {{ lista.nombre }}
+                  </label>
+                </div>
+              </div>
+              <div class="tags mt-2" *ngIf="listasSeleccionadas.length">
+                <span class="tag" *ngFor="let id of listasSeleccionadas">
+                  {{ getListaNombre(id) }}
+                  <button type="button" class="remove-tag" (click)="toggleLista(id)">×</button>
+                </span>
+              </div>
+            </div>
+
+
+              <div class="horizontal-selects">
+                <div class="toggle-group">
+                  <span>VIP:</span>
+                  <button type="button" [class.active]="cambios.vip" (click)="cambios.vip = true">👑</button>
+                  <button type="button" [class.active]="!cambios.vip" (click)="cambios.vip = false">—</button>
+                </div>
+
+                <div class="toggle-group">
+                  <button type="button" [class.active]="cambios.visible" (click)="cambios.visible = true">👁️</button>
+                  <button type="button" [class.active]="!cambios.visible" (click)="cambios.visible = false">🙈</button>
+                </div>
+
+                <div class="toggle-group">
+                  <label for="edadEdit">🔞</label>
+                  <select id="edadEdit" [(ngModel)]="cambios.restringidoEdad" name="edadEdit">
+                    <option *ngFor="let edad of edadesDisponibles" [value]="edad">{{ edad }}+</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" class="primary-btn" [disabled]="savingEdit">
+                  {{ savingEdit ? 'Guardando…' : 'Guardar cambios' }}
+                </button>
+                <button type="button" class="secondary-btn" (click)="closeEdit()" [disabled]="savingEdit">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+        <!-- MODAL CREAR LISTA PÚBLICA -->
+        <div *ngIf="crearListaAbierto" class="modal" role="dialog" aria-modal="true" aria-labelledby="crearListaTitulo">
+          <div class="modal-backdrop" (click)="cerrarCrearLista()"></div>
+          <div class="modal-content" tabindex="-1">
+            <button class="modal-close" (click)="cerrarCrearLista()" aria-label="Cerrar">&times;</button>
+            <h3 id="crearListaTitulo">🗂️ Crear lista pública</h3>
+
+            <form class="upload-form" (ngSubmit)="crearListaPublica()" novalidate>
+              <div class="form-row">
+                <label for="nombreLista">Nombre de la lista <span class="req">*</span></label>
+                <input id="nombreLista"
+                      type="text"
+                      name="nombreLista"
+                      [(ngModel)]="nombreListaNueva"
+                      required
+                      placeholder="p. ej., Recomendadas de la semana" />
+              </div>
+
+              <div class="form-row">
+                <label for="descLista">Descripción <span class="req">*</span></label>
+                <textarea id="descLista"
+                          name="descLista"
+                          [(ngModel)]="descripcionListaNueva"
+                          rows="3"
+                          maxlength="300"
+                          required
+                          placeholder="Describe brevemente el propósito de la lista"></textarea>
+                <small class="field-msg hint">
+                  {{ 300 - (descripcionListaNueva?.length || 0) }} caracteres restantes
+                </small>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit"
+                        class="primary-btn"
+                        [disabled]="savingLista || !(nombreListaNueva?.trim()?.length) || !(descripcionListaNueva?.trim()?.length)">
+                  {{ savingLista ? 'Creando…' : 'Crear lista' }}
+                </button>
+                <button type="button" class="secondary-btn" (click)="cerrarCrearLista()" [disabled]="savingLista">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+
+        <!-- MODAL VISTA -->
+        <div *ngIf="vistaAbierta" class="modal" role="dialog" aria-modal="true" aria-labelledby="vistaTitulo">
+          <div class="modal-backdrop" (click)="cerrarVista()" (keydown)="handleKeyDown($event)"></div>
+          <div class="modal-content" style="max-width:900px;" tabindex="-1">
+            <button class="modal-close" (click)="cerrarVista()" aria-label="Cerrar">&times;</button>
+
+            <h3 id="vistaTitulo" class="sr-only">Vista del contenido</h3>
+            <div class="viewer">
+              <div class="viewer__media" style="position:relative;">
+                <div class="viewer__poster" *ngIf="vistaPoster; else noPosterView">
+                  <img [src]="vistaPoster" alt="Portada de {{ vistaContenido?.titulo }}" loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+                </div>
+                <ng-template #noPosterView>
+                  <div class="viewer__poster viewer__poster--empty">Sin imagen</div>
+                </ng-template>
+              </div>
+
+              <div class="viewer__meta grid-container">
+                <h3 class="viewer__title">
+                  {{ vistaContenido?.titulo }}
+                  <span class="chip" [ngClass]="vistaContenido?.tipo === 'AUDIO' ? 'chip--audio' : 'chip--video'">
+                    {{ vistaContenido?.tipo === 'AUDIO' ? '🎵 AUDIO' : '🎬 VIDEO' }}
+                  </span>
+                </h3>
+
+                <div class="meta-grid">
+                  <div class="meta-item" *ngIf="vistaContenido?.visible !== undefined">
+                    <span class="meta-icon">👁️</span>
+                    <span class="meta-label">Visibilidad:</span>
+                    <span class="meta-value">{{ vistaContenido?.visible ? 'Visible' : 'No visible' }}</span>
+                  </div>
+
+                  <div class="meta-item" *ngIf="vistaContenido?.vip !== undefined">
+                    <span class="meta-icon">👑</span>
+                    <span class="meta-label">VIP:</span>
+                    <span class="meta-value">{{ vistaContenido?.vip ? 'Sí' : 'No' }}</span>
+                  </div>
+
+                  <div class="meta-item" *ngIf="vistaContenido?.restringidoEdad !== undefined">
+                    <span class="meta-icon">🔞</span>
+                    <span class="meta-label">Edad:</span>
+                    <span class="meta-value">{{ vistaContenido?.restringidoEdad }}+</span>
+                  </div>
+
+                  <div class="meta-item" *ngIf="vistaContenido?.duracionMinutos">
+                    <span class="meta-icon">⏱️</span>
+                    <span class="meta-label">Duración:</span>
+                    <span class="meta-value">{{ vistaContenido?.duracionMinutos }} min</span>
+                  </div>
+
+                  <div class="meta-item" *ngIf="vistaContenido?.resolucion">
+                    <span class="meta-icon">🖥️</span>
+                    <span class="meta-label">Resolución:</span>
+                    <span class="meta-value">{{ vistaContenido?.resolucion }}</span>
+                  </div>
+
+                  <div class="meta-item">
+                    <span class="meta-icon">👤</span>
+                    <span class="meta-label">Autor:</span>
+                    <span class="meta-value">{{ vistaContenido?.userEmail || 'Desconocido' }}</span>
+                  </div>
+
+                  <div class="meta-item" *ngIf="vistaContenido?.descripcion">
+                    <span class="meta-icon">📝</span>
+                    <span class="meta-label">Descripción:</span>
+                    <span class="meta-value muted">{{ vistaContenido?.descripcion }}</span>
+                  </div>
+
+                  <div class="meta-item tags-section" *ngIf="vistaContenido?.tags?.length">
+                    <span class="meta-label">Tags:</span>
+                    <div class="viewer__tags">
+                      <span class="tag" *ngFor="let t of vistaContenido?.tags">{{ t }}</span>
+                    </div>
+                  </div>
+
+                  <div class="meta-item tags-section" *ngIf="listasDelContenido?.length">
+                    <span class="meta-label">Listas:</span>
+                    <div class="viewer__tags">
+                      <span class="tag" *ngFor="let listaNombre of listasDelContenido">{{ listaNombre }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div> <!-- /.viewer__meta -->
+            </div> <!-- /.viewer -->
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Panel de edición de perfil (overlay y modal) -->
+  <button class="overlay" *ngIf="editOpen" (click)="cancelarEditar()"></button>
+
+  <button class="edit-panel modal" [class.open]="editOpen" (click)="$event.stopPropagation()">
+    <button type="button" class="modal-close" (click)="cancelarEditar()" aria-label="Cerrar">×</button>
+
+    <div class="edit-body">
+      <h3>Editar perfil</h3>
+
+      <form (ngSubmit)="guardarCambios()">
+        <div class="row">
+          <label class="label-lock" for="email_ro">
+            Email
+            <span class="lock" title="Campo bloqueado">🔒</span>
+            <span class="badge-ro">bloqueado</span>
+          </label>
+          <input id="email_ro" type="text" [ngModel]="userEmail" name="email_ro" class="ro" readonly disabled />
+        </div>
+
+        <div class="row">
+          <label class="label-lock" for="tipoContenido_ro">
+            Tipo Contenido
+            <span class="lock" title="Campo bloqueado">🔒</span>
+            <span class="badge-ro">bloqueado</span>
+          </label>
+          <input id="tipoContenido_ro" type="text" [ngModel]="model.tipoContenido" name="TipoContenido" class="ro" readonly disabled />
+        </div>
+
+        <div class="row">
+          <label for="nombre">Nombre</label>
+          <input id="nombre" type="text" [(ngModel)]="model.nombre" name="nombre" />
+        </div>
+
+        <div class="row">
+          <label for="apellidos">Apellidos</label>
+          <input id="apellidos" type="text" [(ngModel)]="model.apellidos" name="apellidos" />
+        </div>
+
+        <div class="row">
+          <label for="alias">Alias</label>
+          <input type="text" id="alias" name="alias" [(ngModel)]="model.alias" (ngModelChange)="checkAlias(model.alias || '')" />
+          <small *ngIf="aliasChecking" class="info-msg">Comprobando disponibilidad...</small>
+          <small *ngIf="model.alias && (model.alias.length < aliasMinLength || model.alias.length > aliasMaxLength)" class="error-msg">
+            El alias debe tener entre {{aliasMinLength}} y {{aliasMaxLength}} caracteres
+          </small>
+          <small *ngIf="aliasAvailable === false && (model.alias?.length ?? 0) >= aliasMinLength && (model.alias?.length ?? 0) <= aliasMaxLength" class="error-msg">
+            El alias ya está en uso
+          </small>
+          <small *ngIf="aliasAvailable === true && (model.alias?.length ?? 0) >= aliasMinLength && (model.alias?.length ?? 0) <= aliasMaxLength" class="success-msg">
+            ✅ Alias disponible
+          </small>
+        </div>
+
+        <div class="row">
+          <label for="descripcionPerfil">Descripcion</label>
+          <input id="descripcionPerfil" type="text" [(ngModel)]="model.descripcion" name="descripcion" />
+        </div>
+
+        <div class="row">
+          <label for="especialidad">Especialidad</label>
+          <select class="input" id="especialidad" name="especialidad" [(ngModel)]="model.especialidad" (change)="checkEspecialidad()" required>
+            <option value="" disabled selected>Selecciona una especialidad *</option>
+
+            <ng-container *ngIf="userTipoContenido === 'VIDEO'">
+              <option value="tutoriales">Tutoriales</option>
+              <option value="vlogs">Vlogs</option>
+              <option value="entretenimiento">Entretenimiento</option>
+              <option value="educacion">Educación</option>
+              <option value="documentales">Documentales</option>
+              <option value="reviews">Reviews</option>
+            </ng-container>
+
+            <ng-container *ngIf="userTipoContenido === 'AUDIO'">
+              <option value="comedia">Comedia</option>
+              <option value="podcast">Podcast</option>
+              <option value="humor">Humor</option>
+              <option value="entrevistas">Entrevistas</option>
+              <option value="musical">Musical</option>
+            </ng-container>
+          </select>
+          <p class="err" *ngIf="especialidadInvalid">La especialidad no puede estar vacía.</p>
+        </div>
+
+        <div class="Avatar">
+          <button type="button" class="btn" (click)="openAvatarModal()">Elegir Avatar</button>
+          <div *ngIf="selectedAvatar" class="selected-avatar-card">
+            <img [src]="selectedAvatar" alt="avatar" class="selected-avatar-card__img" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+            <div class="selected-avatar-card__text">
+              <b>Avatar seleccionado</b>
+              <small>Puedes cambiarlo cuando quieras</small>
+            </div>
+          </div>
+        </div>
+
+        <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+        <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+        <div class="actions">
+          <button class="btn-darseBaja" type="button" (click)="DarDeBaja(); $event.stopPropagation()">Eliminar Cuenta</button>
+          <button type="button" class="btn-out" (click)="cancelarEditar(); $event.stopPropagation()">Cancelar</button>
+          <button type="submit" class="btn-primario" [disabled]="saving" (click)="$event.stopPropagation()">
+            {{ saving ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </button>
+
+  <div class="ro-overlay" *ngIf="readOnly" aria-hidden="true"></div>
+
+  <!-- AVATAR MODAL -->
+  <div *ngIf="showAvatarModal" class="avatar-modal" (click)="closeAvatarModal()"
+       (keydown.enter)="closeAvatarModal()" (keydown.space)="closeAvatarModal()" (keydown.escape)="closeAvatarModal()">
+    <dialog class="avatar-modal-content" open aria-modal="true" aria-labelledby="avatarTitle"
+            (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()">
+
+      <h2 id="avatarTitle" class="avatar-modal-title">Selecciona tu avatar</h2>
+
+      <div class="avatar-preview" *ngIf="selectedAvatar; else noPreview">
+        <img [src]="selectedAvatar" alt="avatar seleccionado" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+        <div class="avatar-preview__caption">Seleccionado</div>
+      </div>
+
+      <ng-template #noPreview>
+        <div class="avatar-preview avatar-preview--placeholder">
+          <span>Selecciona uno de la galería</span>
+        </div>
+      </ng-template>
+
+      <ul class="avatar-grid">
+        <li *ngFor="let avatar of avatars" class="avatar-option" [class.selected]="selectedAvatar === avatar">
+          <button type="button" (click)="selectAvatar(avatar)" (keydown.enter)="selectAvatar(avatar)"
+                  [attr.aria-pressed]="selectedAvatar === avatar" [attr.aria-label]="'Elegir avatar ' + avatar">
+            <img [src]="avatar" alt="avatar" loading="lazy" decoding="async" referrerpolicy="no-referrer">
+            <span class="avatar-check">✓</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="avatar-modal-actions">
+        <button class="btn btn--ghost" type="button" (click)="closeAvatarModal()" (keydown.enter)="closeAvatarModal()">Cancelar</button>
+      </div>
+    </dialog>
+  </div>
+</div>

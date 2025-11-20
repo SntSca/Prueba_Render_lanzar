@@ -1,0 +1,23 @@
+import { Routes } from '@angular/router';
+import { Auth } from './auth/auth';
+import { Registro } from './registro/registro';
+import { RecoverPassword } from './auth/recover-password/recover-password';
+import { ResetPassword } from './auth/reset-password/reset-password';
+import { PaginaInicialComponent } from './paginaInicialUsuario/paginaInicialUsuario';
+im
+
+export const routes: Routes = [
+  {
+    path: 'auth',
+    component: Auth,
+    children: [
+      { path: 'register', component: Registro },
+      { path: 'recover-password', component: RecoverPassword },
+      { path: 'reset-password', component: ResetPassword },
+    ]
+  },
+  { path: 'pagina-inicial', component: PaginaInicialComponent },
+  { path: },
+  {},
+  { path: '', redirectTo: 'pagina-inicial', pathMatch: 'full' }
+];

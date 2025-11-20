@@ -1,0 +1,57 @@
+/* ==== OVERRIDES MÍNIMOS PARA FIJAR LAYOUT Y QUITAR SCROLL GLOBAL ==== */
+
+/* 1) Página anclada al viewport y sin scroll global */
+html, body{
+  height:100vh;
+  margin:0;                     /* evita márgenes del user agent */
+  overflow-y:clip !important;   /* quita la barra global sin cortar contenido interno */
+  overflow-x:hidden !important; /* evita scroll horizontal accidental */
+}
+
+/* 2) La app llena la ventana y no genera scroll externo */
+.app{
+  height:100vh !important;
+  overflow:hidden;              /* el único scroll será interno en la tabla */
+}
+
+/* 3) Topbar de 72px REALES (el borde no suma altura) */
+.topbar{
+  height:72px;                  /* fija altura real */
+  box-sizing:border-box;        /* el borde entra en esos 72px */
+}
+.topbar__inner{ height:100%; }  /* alinea contenido verticalmente */
+
+/* 4) El área principal encaja EXACTO bajo la topbar
+      – Respeta tus márgenes: 16px arriba y 16px abajo
+      – Mantiene el padding horizontal que ya tienes */
+.main{
+  height:calc(100vh - 72px - 32px) !important; /* 72 de topbar + 16+16 de margen vertical */
+  margin:16px auto !important;  /* conservamos tu separación visual */
+  padding:0 16px !important;    /* sin padding inferior para no sumar altura extra */
+  overflow:hidden;              /* sin scroll aquí */
+  min-height:0;                 /* permite scroll a los hijos */
+}
+
+/* 5) Sidebar y contenido llenan su celda de la grid sin desbordar */
+.sidebar{
+  height:100% !important;
+  overflow:auto;                /* si hay muchos filtros, scrollea aquí */
+  min-height:0;
+}
+.content{
+  height:100% !important;
+  overflow:hidden;              /* nada de scroll aquí */
+  min-height:0;
+}
+
+/* 6) ÚNICO scroll permitido: la tabla */
+.table-wrap{
+  flex:1;
+  overflow:auto !important;
+  min-height:0;
+}
+
+/* (Opcional) Scrollbar estético de la tabla */
+.table-wrap::-webkit-scrollbar{ width:10px; height:10px; }
+.table-wrap::-webkit-scrollbar-thumb{ background:rgba(0,0,0,.4); border-radius:8px; }
+.table-wrap::-webkit-scrollbar-track{ background:rgba(0,0,0,.1); }

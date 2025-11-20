@@ -1,0 +1,268 @@
+<div class="full-screen-wrapper">
+  <div class="page-wrapper">
+    <nav class="navbar">
+      <ul class="navbar-options">
+        <li><a class="active">Gestión de Contenidos</a></li>
+      </ul>
+      <div class="user-panel">
+        <div class="user-photo" title="{{ userName }}">
+          <img *ngIf="userAvatarUrl; else initialsTpl" [src]="userAvatarUrl" alt="Avatar de {{ userName }}" (error)="onAvatarError()" />
+          <ng-template #initialsTpl>
+            <span class="user-photo-fallback">{{ userInitials }}</span>
+          </ng-template>
+        </div>
+        <div class="user-info">
+          <div class="user-name-row">
+            <div class="user-name">{{ userName }}</div>
+            <button class="edit-inline" type="button" (click)="toggleEditar()" title="Editar perfil">✏️</button>
+          </div>
+          <div class="user-email">{{ userEmail }}</div>
+          <div class="user-role">{{ userRole }}</div>
+        </div>
+
+        <button class="logout-btn" (click)="cerrarSesion()">Cerrar Sesión</button>
+      </div>
+    </nav>
+
+
+
+    <div class="main-container">
+      <aside class="filter-panel">
+        <h3>Filtros <span class="tag-construccion">🚧 En construcción</span></h3>
+        <p class="hint-muted">Próximamente podrás filtrar los contenidos desde aquí.</p>
+      </aside>
+
+      <main class="content-area">
+        <div class="toolbar">
+          <h2 class="page-title">Contenidos</h2>
+          <button class="primary-btn" type="button" (click)="abrirCrear()">➕ Añadir contenido</button>
+        </div>
+
+        <div *ngIf="crearAbierto" class="modal" aria-modal="true">
+          <div class="modal-backdrop"></div>
+          <div class="modal-content">
+            <button class="modal-close" (click)="cerrarCrear()" aria-label="Cerrar">&times;</button>
+            <h3>Nuevo contenido de {{ nuevo.tipo || '...' }}</h3>
+
+            <form #formSubida="ngForm" (ngSubmit)="onSubmit(formSubida)" novalidate class="upload-form">
+              <div class="form-row">
+                <label for="titulo">Título <span class="req">*</span></label>
+                <input id="titulo" type="text" name="titulo" [(ngModel)]="nuevo.titulo" #tituloModel="ngModel" required placeholder="p. ej., Interestelar" [class.input-error]="tituloModel.invalid && (tituloModel.dirty || tituloModel.touched)" />
+              </div>
+
+              <div class="form-row">
+                <label for="descripcion">Descripción</label>
+                <textarea id="descripcion" name="descripcion" [(ngModel)]="nuevo.descripcion" rows="3" placeholder="Breve descripción…"></textarea>
+              </div>
+
+              <div class="form-row">
+                <label for="imagen">Imagen (opcional)</label>
+                <input id="imagen" type="text" name="imagen" [(ngModel)]="nuevo.imagen" placeholder="URL o ruta local" />
+                <div class="image-preview" *ngIf="nuevo.imagen">
+                  <img [src]="nuevo.imagen" alt="Vista previa" (error)="imgError = true" (load)="imgError = false" />
+                  <div *ngIf="imgError" class="image-fallback">No se pudo cargar la imagen</div>
+                  <button type="button" class="clear-img-btn" (click)="clearImage()">×</button>
+                </div>
+              </div>
+
+              <div *ngIf="nuevo.tipo === 'AUDIO'" class="form-row">
+                <label for="ficheroAudio">Fichero de audio <span class="req">*</span></label>
+                <input id="ficheroAudio" type="text" name="ficheroAudio" [(ngModel)]="nuevo.ficheroAudio" required placeholder="/ruta/audio.mp3" />
+              </div>
+
+              <div *ngIf="nuevo.tipo === 'VIDEO'">
+                <div class="form-row">
+                  <label for="urlVideo">URL del vídeo <span class="req">*</span></label>
+                  <input id="urlVideo" type="text" name="urlVideo" [(ngModel)]="nuevo.urlVideo" required placeholder="https://..." />
+                </div>
+
+                <div class="form-row">
+                  <label for="resolucion">Resolución</label>
+                  <select id="resolucion" name="resolucion" [(ngModel)]="nuevo.resolucion">
+                    <option value="">Seleccionar</option>
+                    <option value="720p">720p</option>
+                    <option value="1080p">1080p</option>
+                    <option value="4K">4K</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <label for="tags">Tags (separados por coma) <span class="req">*</span></label>
+                <input id="tags" type="text" name="tags" [(ngModel)]="nuevo.tagsStr" required placeholder="ejemplo: drama, misterio" />
+              </div>
+
+              <div class="form-row">
+                <label for="duracionMinutos">Duración (minutos) <span class="req">*</span></label>
+                <input id="duracionMinutos" type="number" name="duracionMinutos" [(ngModel)]="nuevo.duracionMinutos" required min="1" placeholder="Ej. 120" />
+              </div>
+
+              <div class="horizontal-selects">
+                <div class="toggle-group">
+                  <span>VIP:</span>
+                  <button type="button" [class.active]="nuevo.vip === 'si'" (click)="nuevo.vip = 'si'">Sí</button>
+                  <button type="button" [class.active]="nuevo.vip === 'no'" (click)="nuevo.vip = 'no'">No</button>
+                </div>
+
+                <div class="toggle-group">
+                  <span>Visible:</span>
+                  <button type="button" [class.active]="nuevo.visible === 'si'" (click)="nuevo.visible = 'si'">Sí</button>
+                  <button type="button" [class.active]="nuevo.visible === 'no'" (click)="nuevo.visible = 'no'">No</button>
+                </div>
+
+                <div class="toggle-group">
+                  <span>Restr. edad:</span>
+                  <button type="button" [class.active]="nuevo.restringidoEdad === 'si'" (click)="nuevo.restringidoEdad = 'si'">Sí</button>
+                  <button type="button" [class.active]="nuevo.restringidoEdad === 'no'" (click)="nuevo.restringidoEdad = 'no'">No</button>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit" [disabled]="loading" class="primary-btn">
+                  {{ loading ? 'Subiendo...' : 'Guardar' }}
+                </button>
+                <button type="button" class="secondary-btn" (click)="cerrarCrear()" [disabled]="loading">Cancelar</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <div class="placeholder-content">
+          <p>El listado de contenidos se mostrará aquí próximamente.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+
+
+  <button class="overlay" *ngIf="editOpen" (click)="cancelarEditar()"></button>
+
+
+  <button class="edit-panel modal" [class.open]="editOpen" (click)="$event.stopPropagation()">
+
+ 
+    <button type="button" class="modal-close" (click)="cancelarEditar()" aria-label="Cerrar">×</button>
+
+    <div class="edit-body">
+      <h3>Editar perfil</h3>
+
+      <form (ngSubmit)="guardarCambios()">
+        <div class="row">
+          <label class="label-lock">
+            Email
+            <span class="lock" title="Campo bloqueado">🔒</span>
+            <span class="badge-ro">bloqueado</span>
+          </label>
+          <input type="text" [ngModel]="userEmail" name="email_ro" class="ro" readonly disabled />
+        </div>
+
+        <div class="row">
+          <label class="label-lock">
+            Tipo Contenido
+            <span class="lock" title="Campo bloqueado">🔒</span>
+            <span class="badge-ro">bloqueado</span>
+
+          <input type="text" [ngModel]="model.tipoContenido" name="TipoContenido" class="ro" readonly disabled />
+        </div>
+
+        <div class="row">
+          <label>Nombre
+          <input type="text" [(ngModel)]="model.nombre" name="nombre" /></label>
+        </div>
+
+        <div class="row">
+          <label>Apellidos
+          <input type="text" [(ngModel)]="model.apellidos" name="apellidos" /></label>
+        </div>
+
+        <div class="row">
+          <label>Alias
+          <input type="text" [(ngModel)]="model.alias" name="alias" /></label>
+        </div>
+
+        <div class="row">
+          <label>Descripcion
+          <input type="text" [(ngModel)]="model.descripcion" name="descripcion" /></label>
+        </div>
+
+        <div class="row">
+          <label>Especialidad
+          <input type="text" [(ngModel)]="model.especialidad" name="especialidad" /></label>
+        </div>
+
+        <div class="Avatar">
+          <button type="button" class="btn" (click)="openAvatarModal()">Elegir Avatar</button>
+          <div *ngIf="selectedAvatar" class="selected-avatar-card">
+            <img [src]="selectedAvatar" alt="avatar" class="selected-avatar-card__img">
+            <div class="selected-avatar-card__text">
+              <b>Avatar seleccionado</b>
+              <small>Puedes cambiarlo cuando quieras</small>
+            </div>
+          </div>
+        </div>
+
+        <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+        <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+        <div class="actions">
+          <button class="btn-darseBaja" type="button" (click)="DarDeBaja(); $event.stopPropagation()">Eliminar Cuenta</button>
+          <button type="button" class="btn-out" (click)="cancelarEditar(); $event.stopPropagation()">Cancelar</button>
+          <button type="submit" class="btn-primario" [disabled]="saving" (click)="$event.stopPropagation()">
+            {{ saving ? 'Guardando…' : 'Guardar' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </button>
+
+
+  
+  <div class="ro-overlay" *ngIf="readOnly" aria-hidden="true"></div>
+  
+  <div
+    *ngIf="showAvatarModal"
+    class="avatar-modal"
+    tabindex="0"
+    (click)="closeAvatarModal()"
+    (keydown.enter)="closeAvatarModal()"
+    (keydown.space)="closeAvatarModal()"
+    (keydown.escape)="closeAvatarModal()">
+
+    <div
+      class="avatar-modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="avatarTitle"
+      (click)="$event.stopPropagation()">
+
+      <div class="avatar-preview" *ngIf="selectedAvatar; else noPreview">
+        <img [src]="selectedAvatar" alt="avatar seleccionado">
+        <div class="avatar-preview__caption">Seleccionado</div>
+      </div>
+      <ng-template #noPreview>
+        <div class="avatar-preview avatar-preview--placeholder">
+          <span>Selecciona uno de la galería</span>
+        </div>
+      </ng-template>
+
+      <ul class="avatar-grid">
+        <li *ngFor="let avatar of avatars"
+            class="avatar-option"
+            [class.selected]="selectedAvatar === avatar">
+          <button type="button"
+                  (click)="selectAvatar(avatar)"
+                  (keydown.enter)="selectAvatar(avatar)"
+                  [attr.aria-pressed]="selectedAvatar === avatar"
+                  [attr.aria-label]="'Elegir avatar ' + avatar">
+            <img [src]="avatar" alt="avatar">
+            <span class="avatar-check">✓</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="avatar-modal-actions">
+        <button class="btn btn--ghost" type="button" (click)="closeAvatarModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>

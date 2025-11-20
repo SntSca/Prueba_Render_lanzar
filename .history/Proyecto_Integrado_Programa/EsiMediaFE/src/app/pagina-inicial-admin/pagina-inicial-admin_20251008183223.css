@@ -1,0 +1,348 @@
+/* ==================== ESIMedia · Tema Netflix ==================== */
+/* Dark UI con acento rojo, sin scroll global; scroll solo en tabla  */
+/* ================================================================= */
+
+:root{
+  /* Layout */
+  --topbar-h:72px;
+
+  /* Colores base estilo Netflix */
+  --bg:#290e0e;           /* fondo general */
+  --panel:#181818;        /* paneles/cards */
+  --ink:#e5e5e5;          /* texto principal */
+  --muted:#b3b3b3;        /* texto secundario */
+  --stroke:#2f2f2f;       /* bordes */
+  --shadow:0 10px 30px rgba(0,0,0,.55);
+
+  /* Acentos y estados */
+  --accent:#e50914;       /* rojo Netflix */
+  --accent-600:#f6121d;
+  --accent-700:#b20710;
+  --ok:#1db954;           /* verde OK (tipo Spotify, pero queda bien jeje) */
+  --warn:#f0a500;         /* ámbar/bloqueo */
+
+  --radius:16px;
+  --radius-lg:22px;
+  --gap:16px;
+}
+
+/* Página anclada al viewport y sin scroll global */
+html, body{
+  height:100vh;
+  margin:0;
+  overflow:clip !important;
+  overflow-x:hidden !important;
+  background:
+    radial-gradient(1200px 600px at 80% -10%, rgba(229,9,20,.18), transparent 60%),
+    radial-gradient(800px 500px at 10% -10%, rgba(229,9,20,.12), transparent 55%),
+    var(--bg);
+  color:var(--ink);
+  font-family:Inter,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;
+  line-height:1.35;
+}
+
+/* Accesibilidad */
+.visually-hidden{
+  position:absolute !important;
+  clip:rect(1px,1px,1px,1px);
+  clip-path:inset(50%);
+  height:1px;width:1px;
+  overflow:hidden;white-space:nowrap;
+  border:0;padding:0;margin:-1px;
+}
+
+/* App */
+.app{
+  height:100vh;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+/* Toggle filtros oculto */
+.filters-toggle{
+  position:absolute;
+  left:-9999px; top:-9999px;
+}
+
+/* ── Topbar ── */
+:root{ --topbar-h:72px; }
+.topbar{
+  position:sticky; top:0; z-index:20;
+  height:var(--topbar-h);
+  box-sizing:border-box;
+  background:linear-gradient(180deg, #0f0f0f 0%, #151515 100%);
+  border-bottom:1px solid #0a0a0a;
+  box-shadow:0 6px 16px rgba(0,0,0,.35);
+}
+.topbar__inner{
+  max-width:1280px;
+  height:100%;
+  margin:0 auto;
+  padding:0 16px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+.brand{
+  font-weight:800;
+  letter-spacing:.2px;
+  font-size:clamp(18px,2.2vw,22px);
+  color:#fff;
+  background:transparent;
+  padding:8px 0;
+  border-radius:0;
+  position:relative;
+}
+.brand::before{
+  content:"";
+  display:inline-block;
+  width:22px; height:22px;
+  margin-right:10px;
+  border-radius:4px;
+  background:var(--accent);
+  box-shadow:0 0 20px rgba(229,9,20,.75), inset 0 -8px 18px rgba(0,0,0,.35);
+  vertical-align:middle;
+}
+
+.profile{
+  margin-left:auto;
+  display:flex; align-items:center; gap:12px;
+  color:inherit; text-decoration:none;
+}
+.avatar{
+  width:42px;height:42px;
+  border-radius:8px;
+  display:grid; place-items:center;
+  font-weight:800;
+  background:#222;
+  color:#fff;
+  border:1px solid #3a3a3a;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);
+}
+.profile__meta{display:flex;flex-direction:column;align-items:flex-end}
+.email{font-weight:600; color:#fff}
+.role{
+  font-size:.8rem;
+  color:#fff;
+  background:#222;
+  border:1px solid #3a3a3a;
+  border-radius:999px;
+  padding:2px 10px;
+}
+
+/* Botones */
+.btn{
+  padding:9px 14px;
+  background:#202020;
+  border:1px solid #3a3a3a;
+  border-radius:10px;
+  font-weight:700;
+  color:#f2f2f2;
+  cursor:pointer;
+  transition:transform .06s ease, border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.btn:hover{
+  border-color:#595959;
+  background:#242424;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+.btn:active{ transform:translateY(1px) }
+
+.btn--primary{
+  background:linear-gradient(180deg, var(--accent) 0%, var(--accent-700) 100%);
+  border-color:#ff3140;
+  color:white;
+}
+.btn--primary:hover{
+  background:linear-gradient(180deg, var(--accent-600) 0%, var(--accent) 100%);
+  border-color:#ff4b57;
+}
+
+/* ── Main layout ── */
+.main{
+  flex:1;
+  display:grid;
+  grid-template-columns:300px 1fr;
+  gap:var(--gap);
+  width:100%;
+  padding:0 16px 16px;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* Sidebar */
+.sidebar{
+  background:linear-gradient(180deg, #181818 0%, #151515 100%);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  padding:22px;
+  border:1px solid #262626;
+  position:relative;
+  height:100%;
+  overflow:auto;
+  min-height:0;
+}
+.sidebar h2{
+  margin:0 0 8px 0;
+  font-size:20px; font-weight:800;
+  color:#ffffff;
+}
+.muted{color:var(--muted)}
+
+.fld{display:flex;flex-direction:column;gap:8px;margin-top:14px}
+.fld input,.fld select{
+  padding:11px 12px;
+  border-radius:10px;
+  border:1px solid #2d2d2d;
+  background:#111;
+  color:#eaeaea;
+  outline:none;
+  transition:border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+.fld input::placeholder{color:#7a7a7a}
+.fld input:focus,.fld select:focus{
+  border-color:#444;
+  box-shadow:0 0 0 3px rgba(229,9,20,.25);
+  background:#0f0f0f;
+}
+.fld-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* Contenido */
+.content{
+  display:flex; flex-direction:column;
+  background:linear-gradient(180deg, #181818 0%, #141414 100%);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  border:1px solid #262626;
+  height:100%;
+  overflow:hidden;
+  padding:18px;
+  min-height:0;
+}
+
+/* Herramientas tabla */
+.tools{
+  display:flex; flex-wrap:wrap; align-items:center; gap:8px;
+  justify-content:flex-end;
+}
+.tools .btn{ background:#1b1b1b; border-color:#2f2f2f; }
+.tools .btn:hover{ background:#232323; }
+
+/* Tabla */
+.table-wrap{
+  background:#0f0f0f;
+  border:1px solid #242424;
+  border-radius:14px;
+  padding:12px;
+  position:relative;
+  flex:1;
+  overflow:auto !important;
+  min-height:0;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+
+.users{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  min-width:840px;
+  color:#eaeaea;
+}
+.users thead th{
+  position:sticky; top:0; z-index:1;
+  background:linear-gradient(180deg, #101010 0%, #0a0a0a 100%);
+  border-bottom:1px solid #2b2b2b;
+  text-align:left;
+  padding:12px;
+  font-size:13px;
+  letter-spacing:.3px;
+  color:#bfbfbf;
+}
+.users tbody tr{
+  background:transparent;
+}
+.users tbody tr:nth-child(odd){
+  background:rgba(255,255,255,.02);  /* zebra muy sutil */
+}
+.users tbody td{
+  padding:12px;
+  border-bottom:1px dashed rgba(255,255,255,.08);
+  vertical-align:middle;
+}
+.users tbody tr:last-child td{border-bottom:none}
+
+/* Badges */
+.badge{
+  display:inline-block;
+  padding:3px 10px;
+  border:1px solid #3a3a3a;
+  border-radius:999px;
+  font-size:.8rem;
+  background:#151515;
+  color:#e9e9e9;
+}
+.badge--ok{
+  background:rgba(29,185,84,.12);
+  border-color:rgba(29,185,84,.35);
+  color:#b7f1c9;
+}
+.badge--warn{
+  background:rgba(240,165,0,.13);
+  border-color:rgba(240,165,0,.35);
+  color:#ffdca3;
+}
+
+/* Chip usuario */
+.chip{
+  display:flex; align-items:center; gap:12px;
+}
+.chip .chip-avatar{
+  width:36px; height:36px; border-radius:8px;
+  background:#1a1a1a;
+  border:1px solid #333;
+  display:grid; place-items:center; font-weight:800; color:#fff;
+}
+.chip .chip-meta{display:flex; flex-direction:column; line-height:1.15}
+.chip .chip-name{font-weight:700; color:#fff}
+.chip .chip-email{font-size:.85rem; color:#9a9a9a}
+
+/* Selección de texto */
+::selection{ background:rgba(229,9,20,.35); color:#fff; }
+
+/* Scrollbar oscuro solo en la tabla */
+.table-wrap::-webkit-scrollbar{ width:10px; height:10px; }
+.table-wrap::-webkit-scrollbar-thumb{ background:#3a3a3a; border-radius:8px; }
+.table-wrap::-webkit-scrollbar-thumb:hover{ background:#4a4a4a; }
+.table-wrap::-webkit-scrollbar-track{ background:#151515; }
+
+/* ── Breakpoints ───────────────────────────────────────────────────── */
+@media (max-width:1200px){
+  .main{grid-template-columns:260px 1fr}
+}
+@media (max-width:900px){
+  .btn-filters{display:inline-block}
+  .main{grid-template-columns:1fr; gap:14px;}
+  .sidebar{
+    position:fixed; inset:auto auto 0 0;
+    top:var(--topbar-h);
+    height:calc(100dvh - var(--topbar-h));
+    width:min(88vw,360px);
+    transform:translateX(-105%);
+    transition:transform .3s ease;
+    z-index:30;
+    overflow:auto;
+    border-right:1px solid #262626;
+  }
+  .filters-toggle:checked ~ .main .sidebar{transform:none}
+  .content{padding:14px}
+}
+@media (max-width:600px){
+  :root{ --topbar-h:64px; }
+  .avatar{width:36px;height:36px}
+  .email{font-size:.95rem}
+  .role{font-size:.76rem}
+}
+@media (max-width:420px){
+  .profile__meta{display:none}
+}

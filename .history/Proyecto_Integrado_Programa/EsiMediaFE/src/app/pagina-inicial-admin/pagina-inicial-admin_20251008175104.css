@@ -1,0 +1,50 @@
+/* ── Variables de color nuevas ── */
+:root{
+  --bg:#fbf2e9;              /* fondo general */
+  --panel:#f6ece1;           /* paneles / sidebar / content */
+  --ink:#2a2a2a;             /* texto principal */
+  --muted:#7a6f66;           /* texto secundario */
+  --stroke:#1b1b1b;          /* borde oscuro */
+  --shadow:0 6px 18px rgba(0,0,0,.08);
+  --radius:16px;
+  --radius-lg:22px;
+  --gap:16px;
+
+  /* colores nuevos */
+  --btn-primary:#ff7f50;     /* botones principales */
+  --btn-hover:#ff6333;       /* hover botones */
+  --filter-bg:#fff8f2;       /* fondo inputs y select */
+  --table-header:#ffd8b1;    /* fondo cabecera tabla */
+  --table-row-hover:#ffe0c9; /* hover filas tabla */
+  --avatar-bg:#ffb482;       /* fondo avatar */
+}
+
+/* Botones */
+.btn{padding:8px 12px; background:var(--btn-primary); border:2px solid var(--btn-primary); border-radius:10px; font-weight:600; cursor:pointer; color:#fff; transition:.2s}
+.btn:hover{background:var(--btn-hover); border-color:var(--btn-hover)}
+
+/* Inputs y selects */
+.fld input, .fld select{
+  padding:10px 12px;
+  border-radius:10px;
+  border:2px solid rgba(0,0,0,.1);
+  background:var(--filter-bg);
+  transition:.2s;
+}
+.fld input:focus, .fld select:focus{border-color:var(--btn-primary); outline:none}
+
+/* Tabla de usuarios */
+.users-table th{
+  background:var(--table-header);
+  font-weight:600;
+  border-bottom:2px solid var(--stroke);
+}
+.users-table tr:hover{background:var(--table-row-hover)}
+.users-table td .avatar{background:var(--avatar-bg); color:#fff; font-weight:700; display:grid; place-items:center; border:2px solid var(--stroke)}
+
+/* Topbar y brand */
+.topbar{background:#ff8c66; color:#fff; border-bottom:2px solid #ff6f40;}
+.brand{background:#fff3e8; color:#ff5c1f;}
+
+/* Sidebar */
+.sidebar{background:#fff3e8; border:2px solid #ffae80;}

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>App con Filtros Desplegables</title>
+  <link rel="stylesheet" href="styles.css"> <!-- Asegúrate de poner tu CSS aquí -->
+</head>
+<body>
+<div class="app">
+
+  <!-- ── TOP BAR ── -->
+  <header class="topbar">
+    <div class="brand">Barra de Opciones</div>
+    <a class="profile" href="#" title="Ir a gestión de perfil">
+      <div class="avatar">Foto</div>
+      <div class="profile__meta">
+        <div class="email">correo@ejemplo.com</div>
+        <div class="role">Rol</div>
+      </div>
+    </a>
+  </header>
+
+  <!-- ── BOTÓN FILTROS DESPLEGABLE ── -->
+  <input id="filters-toggle" class="filters-toggle" type="checkbox" aria-hidden="true" />
+  <label for="filters-toggle" class="btn-filters">Filtros</label>
+
+  <!-- ── PANEL DE FILTROS ── -->
+  <aside class="sidebar" aria-label="Filtrado">
+    <h2>Filtrado</h2>
+    <p class="muted">Búsqueda y filtros.</p>
+
+    <label class="fld">
+      <span>Buscar</span>
+      <input type="text" placeholder="Título, actor…" />
+    </label>
+
+    <label class="fld">
+      <span>Categoría</span>
+      <select>
+        <option>Todas</option>
+        <option>Acción</option>
+        <option>Drama</option>
+        <option>Comedia</option>
+      </select>
+    </label>
+
+    <label class="fld">
+      <span>Año</span>
+      <input type="number" min="1900" max="2099" step="1" placeholder="2024" />
+    </label>
+  </aside>
+
+  <!-- ── CONTENIDO DE CARRUSELES ── -->
+  <main class="content" aria-label="Listado de películas">
+    
+    <section class="row">
+      <h3>Películas Destacadas</h3>
+      <div class="carousel" role="list">
+        <article class="item" role="listitem">
+          <div class="cover">Carátula 1</div>
+          <div class="meta">
+            <div class="title">Película 1</div>
+            <div class="muted">Descripción breve</div>
+          </div>
+        </article>
+        <article class="item" role="listitem">
+          <div class="cover">Carátula 2</div>
+          <div class="meta">
+            <div class="title">Película 2</div>
+            <div class="muted">Descripción breve</div>
+          </div>
+        </article>
+        <article class="item" role="listitem">
+          <div class="cover">Carátula 3</div>
+          <div class="meta">
+            <div class="title">Película 3</div>
+            <div class="muted">Descripción breve</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="row">
+      <h3>Últimos Estrenos</h3>
+      <div class="carousel" role="list">
+        <article class="item" role="listitem">
+          <div class="cover">Carátula A</div>
+          <div class="meta">
+            <div class="title">Película A</div>
+            <div class="muted">Descripción breve</div>
+          </div>
+        </article>
+        <article class="item" role="listitem">
+          <div class="cover">Carátula B</div>
+          <div class="meta">
+            <div class="title">Película B</div>
+            <div class="muted">Descripción breve</div>
+          </div>
+        </article>
+        <article class="item" role="listitem">
+          <div class="cover">Carátula C</div>
+          <div class="meta">
+            <div class="title">Película C</div>
+            <div class="muted">Descripción breve</div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+  </main>
+
+</div>
+</body>
+</html>

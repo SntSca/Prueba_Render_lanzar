@@ -1,0 +1,164 @@
+/* Fuentes y reset */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:host, html, body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', Arial, sans-serif;
+  background-color: #141414;
+  color: #fff;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Contenedor principal */
+.page-wrapper { display: flex; flex-direction: column; height: 100vh; width: 100vw; }
+.main-container { display: flex; flex: 1; min-height: 0; padding: 20px; background-color: #141414; overflow: hidden; }
+
+/* Área de contenido */
+.content-area {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  font-size: 0.85em;
+  flex: 1 1 auto;
+}
+
+/* Toolbar */
+.toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin: 10px 0 18px; position: relative; z-index: 2; }
+.page-title { font-size: 1.4rem; font-weight: 700; letter-spacing: .3px; margin: 0; }
+
+/* Botones principales */
+.primary-btn, .secondary-btn {
+  appearance: none; border: 0; border-radius: 10px; padding: 10px 16px; font-weight: 700; cursor: pointer;
+  transition: transform .12s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, border-color .2s ease;
+  will-change: transform;
+}
+.primary-btn { background-color: #e50914; color: #fff; box-shadow: 0 6px 18px rgba(229, 9, 20, .25); position: relative; z-index: 3; }
+.primary-btn:hover { background-color: #f40612; transform: translateY(-1px); }
+.primary-btn:active { transform: translateY(0); box-shadow: 0 4px 14px rgba(229, 9, 20, .28); }
+.primary-btn[disabled] { opacity: .6; cursor: not-allowed; transform: none; }
+.secondary-btn { background: transparent; color: #fff; border: 1px solid #444; }
+.secondary-btn:hover { border-color: #777; background: #222; }
+
+/* Modal común */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  pointer-events: none; /* evita bloquear clics cuando está oculto */
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.modal.open {
+  pointer-events: auto;
+  opacity: 1;
+}
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 9998;
+}
+.modal-content {
+  position: relative;
+  z-index: 10000;
+  background: linear-gradient(135deg, #000 0%, #141414 100%);
+  padding: 30px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 680px;
+  border: 1px solid #262626;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  color: #fff;
+  max-height: 85vh;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #3a3a3a #0e0e0e;
+}
+.modal-content::-webkit-scrollbar { width: 10px; }
+.modal-content::-webkit-scrollbar-track { background: #0e0e0e; border-left: 1px solid #191919; }
+.modal-content::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 10px; border: 2px solid #0e0e0e; }
+.modal-content::-webkit-scrollbar-thumb:hover { background: #3a3a3a; }
+
+/* Cerrar modal */
+.modal-close {
+  position: absolute; top: 10px; right: 16px; width: 36px; height: 36px;
+  border-radius: 10px; border: 1px solid #333; background: #1b1b1b; color: #ddd;
+  font-size: 22px; line-height: 1; cursor: pointer; display: grid; place-items: center;
+  transition: background .2s ease, color .2s ease, transform .1s ease, border-color .2s ease;
+}
+.modal-close:hover { background: #222; color: #fff; border-color: #555; transform: rotate(0deg) scale(1.03); }
+
+/* Edit Panel Modal */
+.edit-panel.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(var(--edit-form-w, 720px), 92vw);
+  max-width: 900px;
+  max-height: var(--edit-form-h, 600px);
+  overflow-y: auto;
+  background: #151515;
+  border-radius: 14px;
+  padding: 20px;
+  z-index: 10010;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+.edit-panel.modal.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* Formulario dentro del Edit Panel */
+.edit-panel.modal form {
+  max-height: calc(var(--edit-form-h, 600px) - 80px);
+  overflow-y: auto;
+  padding-right: 5px;
+}
+.edit-panel.modal .edit-body {
+  width: 100%;
+  max-width: calc(var(--edit-form-w, 720px) - 40px);
+  margin: 0 auto;
+}
+.edit-panel.modal .btn { width: auto !important; min-width: 110px; }
+
+/* Avatar Modal */
+.avatar-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 11000;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(2px);
+  display: grid;
+  place-items: center;
+}
+.avatar-modal-content {
+  position: relative;
+  z-index: 11001;
+  width: min(720px, 92vw);
+  max-height: 80vh;
+  background: rgba(20,20,20,0.95);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+/* Overlay para bloqueos */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 998;
+  animation: fadeIn 0.15s ease forwards;
+}
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }

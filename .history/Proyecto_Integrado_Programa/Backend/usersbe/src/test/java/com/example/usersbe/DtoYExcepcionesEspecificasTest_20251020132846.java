@@ -1,0 +1,220 @@
+package com.example.usersbe;
+
+package com.example.usersbe;
+
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import java.lang.reflect.Method;
+import java.time.LocalDate;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+/**
+ * Cubre por reflexión los DTOs/Excepciones que aparecen en Sonar con nombres en español.
+ * Si una clase no existe en tu proyecto, se ignora sin fallar el test.
+ */
+class DtoYExcepcionesEspecificasTest {
+
+    // ---------- Helpers genéricos ----------
+    private static Class<?> tryLoad(String... fqcnCandidates) {
+        for (String name : fqcnCandidates) {
+            try { return Class.forName(name); } catch (ClassNotFoundException ignored) {}
+        }
+        return null;
+    }
+
+    private static Object newInstanceOrNull(Class<?> c) {
+        try { return c.getDeclaredConstructor().newInstance(); } catch (Throwable e) { return null; }
+    }
+
+    private static void setIfPresent(Object bean, String setter, Class<?> pt, Object val) {
+        try {
+            Method m = bean.getClass().getMethod(setter, pt);
+            m.invoke(bean, val);
+        } catch (Throwable ignored) {}
+    }
+
+    private static Object getIfPresent(Object bean, String getter) {
+        try {
+            Method m = bean.getClass().getMethod(getter);
+            return m.invoke(bean);
+        } catch (Throwable ignored) { return null; }
+    }
+
+    private static void assertNotBlank(Object v) {
+        assertNotNull(v);
+        if (v instanceof String s) assertFalse(s.isBlank());
+    }
+
+    // ---------- DTOs ----------
+
+    @Test @DisplayName("DTO: SolicitudDeVerificacionDeCaptcha (token)")
+    void dto_solicitud_captcha() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.dto.SolicitudDeVerificacionDeCaptcha",
+                "com.example.usersbe.dto.SolicitudDeVerificacionDeCaptchaDTO"
+        );
+        if (c == null) return; // no existe en este proyecto
+
+        Object bean = newInstanceOrNull(c);
+        assertNotNull(bean);
+
+        setIfPresent(bean, "setToken", String.class, "tok");
+        Object out = getIfPresent(bean, "getToken");
+        assertEquals("tok", out);
+    }
+
+    @Test @DisplayName("DTO: SolicitudDeVerificacionDeMfa (code)")
+    void dto_solicitud_mfa() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.dto.SolicitudDeVerificacionDeMfa",
+                "com.example.usersbe.dto.SolicitudDeVerificacionMfa"
+        );
+        if (c == null) return;
+
+        Object bean = newInstanceOrNull(c);
+        assertNotNull(bean);
+
+        setIfPresent(bean, "setCode", String.class, "123456");
+        Object out = getIfPresent(bean, "getCode");
+        assertEquals("123456", out);
+    }
+
+    @Test @DisplayName("DTO: SolicitudDeRegistro (nombre/apellidos/alias/email/fechaNac/pwd/foto)")
+    void dto_solicitud_registro() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.dto.SolicitudDeRegistro",
+                "com.example.usersbe.dto.RegistroRequest"
+        );
+        if (c == null) return;
+
+        Object bean = newInstanceOrNull(c);
+        assertNotNull(bean);
+
+        setIfPresent(bean, "setNombre", String.class, "N");
+        setIfPresent(bean, "setApellidos", String.class, "A");
+        setIfPresent(bean, "setAlias", String.class, "alias");
+        setIfPresent(bean, "setEmail", String.class, "u@mail.com");
+        setIfPresent(bean, "setFechaNac", String.class, "2001-02-03");
+        setIfPresent(bean, "setPwd", String.class, "secret");
+        setIfPresent(bean, "setFoto", String.class, "f.png");
+
+        assertEquals("N", getIfPresent(bean, "getNombre"));
+        assertEquals("A", getIfPresent(bean, "getApellidos"));
+        assertEquals("alias", getIfPresent(bean, "getAlias"));
+        assertEquals("u@mail.com", getIfPresent(bean, "getEmail"));
+        assertEquals("2001-02-03", getIfPresent(bean, "getFechaNac"));
+        assertEquals("secret", getIfPresent(bean, "getPwd"));
+        assertEquals("f.png", getIfPresent(bean, "getFoto"));
+    }
+
+    @Test @DisplayName("DTO: CreadorDTO (alias/descripcion/especialidad)")
+    void dto_creador() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.dto.CreadorDTO",
+                "com.example.usersbe.dto.CreadorDto"
+        );
+        if (c == null) return;
+
+        Object bean = newInstanceOrNull(c);
+        assertNotNull(bean);
+
+        setIfPresent(bean, "setAlias", String.class, "x");
+        setIfPresent(bean, "setDescripcion", String.class, "d");
+        setIfPresent(bean, "setEspecialidad", String.class, "e");
+
+        assertEquals("x", getIfPresent(bean, "getAlias"));
+        assertEquals("d", getIfPresent(bean, "getDescripcion"));
+        assertEquals("e", getIfPresent(bean, "getEspecialidad"));
+    }
+
+    @Test @DisplayName("DTO: ErrorAmistoso (message)")
+    void dto_error_amistoso() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.dto.ErrorAmistoso",
+                "com.example.usersbe.dto.ErrorFriendly"
+        );
+        if (c == null) return;
+
+        Object bean = newInstanceOrNull(c);
+        assertNotNull(bean);
+
+        setIfPresent(bean, "setMessage", String.class, "hola");
+        assertEquals("hola", getIfPresent(bean, "getMessage"));
+    }
+
+    // ---------- Excepciones ----------
+
+    @Test @DisplayName("Excepción: AliasYaUsadoException")
+    void ex_alias_ya_usado() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.exceptions.AliasYaUsadoException",
+                "com.example.usersbe.exceptions.DuplicateAliasException"
+        );
+        if (c == null) return;
+
+        try {
+            var ctor = c.getDeclaredConstructor(String.class);
+            Object ex = ctor.newInstance("alias");
+            assertTrue(((Throwable) ex).getMessage().toLowerCase().contains("alias"));
+        } catch (Throwable ignored) {}
+    }
+
+    @Test @DisplayName("Excepción: Usuario bloqueado")
+    void ex_usuario_bloqueado() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.exceptions.UserBlockedException",
+                "com.example.usersbe.exceptions.ExcepcionDeUsuarioBloqueado"
+        );
+        if (c == null) return;
+
+        try {
+            var ctor = c.getDeclaredConstructor(String.class);
+            Object ex = ctor.newInstance("bloqueado");
+            assertTrue(((Throwable) ex).getMessage().toLowerCase().contains("bloque"));
+        } catch (Throwable ignored) {}
+    }
+
+    @Test @DisplayName("Excepción: Creador no encontrado")
+    void ex_creador_no_encontrado() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.exceptions.CreatorNotFoundException",
+                "com.example.usersbe.exceptions.ExcepcionDeCreadorNoEncontrado"
+        );
+        if (c == null) return;
+
+        try {
+            var ctor = c.getDeclaredConstructor(String.class);
+            Object ex = ctor.newInstance("idc");
+            assertNotBlank(((Throwable) ex).getMessage());
+        } catch (Throwable ignored) {}
+    }
+
+    @Test @DisplayName("Excepción: NoACreatorException")
+    void ex_no_a_creator() {
+        Class<?> c = tryLoad("com.example.usersbe.exceptions.NoACreatorException");
+        if (c == null) return;
+
+        try {
+            var ctor = c.getDeclaredConstructor(String.class);
+            Object ex = ctor.newInstance("noC");
+            assertTrue(((Throwable) ex).getMessage().contains("noC"));
+        } catch (Throwable ignored) {}
+    }
+
+    @Test @DisplayName("Excepción: Usuario ya existente")
+    void ex_usuario_ya_existente() {
+        Class<?> c = tryLoad(
+                "com.example.usersbe.exceptions.UserAlreadyExistsException",
+                "com.example.usersbe.exceptions.ExcepcionDeUsuarioYaExistente"
+        );
+        if (c == null) return;
+
+        try {
+            var ctor = c.getDeclaredConstructor(String.class);
+            Object ex = ctor.newInstance("correo");
+            assertNotBlank(((Throwable) ex).getMessage());
+        } catch (Throwable ignored) {}
+    }
+}

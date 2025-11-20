@@ -1,0 +1,615 @@
+<div class="ro-banner" *ngIf="readOnly">
+  <span>📖 Modo lectura activado — no puedes interactuar con esta página.</span>
+  <button
+    class="btn-cerrar"
+    *ngIf="fromAdmin"
+    type="button"
+    (click)="salirModoLectura()"
+    aria-label="Salir del modo lectura">
+    Salir del modo lectura
+  </button>
+</div>
+
+<div class="ro-wrap" [class.readonly]="readOnly">
+
+  <div class="usuario-shell">
+
+    <header class="user-hero">
+      <div class="user-hero-left">
+        <div class="user-identity">
+          <div class="user-avatar-shell">
+            <div class="ava">
+              <img *ngIf="userAvatar" [src]="userAvatar" alt="Avatar" class="avatar-img">
+              <span *ngIf="!userAvatar" class="avatar-initials">{{ userInitials }}</span>
+            </div>
+          </div>
+
+          <div class="user-meta">
+            <div class="user-meta-main">
+              <div class="user-name">{{ userName }}</div>
+              <button
+                class="edit-inline"
+                type="button"
+                (click)="toggleEditar()"
+                title="Editar perfil"
+                [disabled]="readOnly">
+                ✏️
+              </button>
+              <span class="user-chip-vip" *ngIf="model?.vip">VIP</span>
+            </div>
+            <div class="user-email">{{ userEmail }}</div>
+          </div>
+        </div>
+
+        <p class="hero-subtitle">
+          Disfruta de tus contenidos recomendados, favoritos y el historial de lo que has visto.
+        </p>
+      </div>
+
+      <div class="user-hero-right">
+        <div class="catalog-mode" *ngIf="isUsuario">
+          <span class="catalog-mode-label">Vista</span>
+          <div class="catalog-mode-pills">
+            <button
+              type="button"
+              class="catalog-mode-pill"
+              [class.active]="filterMode === 'todos'"
+              (click)="filterMode = 'todos'; onFilterChange()">
+              📚 Todos
+            </button>
+            <button
+              type="button"
+              class="catalog-mode-pill"
+              [class.active]="filterMode === 'favoritos'"
+              (click)="filterMode = 'favoritos'; onFilterChange()">
+              ❤️ Favoritos
+            </button>
+            <button
+              type="button"
+              class="catalog-mode-pill"
+              [class.active]="filterMode === 'historial'"
+              (click)="filterMode = 'historial'; onFilterChange()">
+              🕓 Historial
+            </button>
+          </div>
+
+          <!-- Select real para accesibilidad / teclado -->
+          <label for="catalogFilter" class="sr-only">Filtro de catálogo</label>
+          <select id="catalogFilter"
+                  class="catalog-mode-select sr-only"
+                  [(ngModel)]="filterMode"
+                  (change)="onFilterChange()">
+            <option value="todos">📚 Todos</option>
+            <option value="favoritos">❤️ Mis favoritos</option>
+            <option value="historial">🕓 Historial</option>
+          </select>
+        </div>
+
+        <button class="btn-cerrar hero-logout" (click)="CerrarSesion()">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <section class="contenidos-section" aria-label="Catálogo de contenidos">
+
+      <div class="user-layout">
+
+        <aside class="user-filters">
+          <div class="user-filters-card">
+            <div class="user-filters-header">
+              <h3 class="user-filters-title">🔎 Filtros</h3>
+              <span class="user-filters-badge">
+                {{ filteredCon.length || 0 }} resultado(s)
+              </span>
+            </div>
+
+            <form (submit)="$event.preventDefault()">
+              <div class="filter-section">
+                <label for="q">🔤 Búsqueda (Título)</label>
+                <input id="q" type="text" name="q"
+                       [(ngModel)]="filtrosContenido.q"
+                       (ngModelChange)="onFiltrosChange()"
+                       placeholder="Buscar..." />
+              </div>
+
+              <div class="filter-section">
+                <label for="tipo">🎞️ Tipo</label>
+                <select id="tipo" name="tipo"
+                        [(ngModel)]="filtrosContenido.tipo"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="">Todos</option>
+                  <option *ngFor="let t of tiposDisponibles" [value]="t">{{ t }}</option>
+                </select>
+              </div>
+
+              <div class="filter-section">
+                <label for="categoria">🏷️ Categoría</label>
+                <select id="categoria" name="categoria"
+                        [(ngModel)]="filtrosContenido.categoria"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="">Todas</option>
+                  <option *ngFor="let c of categoriasDisponibles" [value]="c">{{ c }}</option>
+                </select>
+              </div>
+
+              <div class="filter-section" *ngIf="canSeeVip()">
+                <label for="role">🛡️ Rol de acceso</label>
+                <select id="role" name="role"
+                        [(ngModel)]="filtrosContenido.role"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="">Cualquiera</option>
+                  <option value="VIP">VIP</option>
+                  <option value="STANDARD">Estándar</option>
+                </select>
+              </div>
+
+              <div class="filter-section">
+                <label>👶 Clasificación por edad</label>
+                <div class="age-row">
+                  <select name="ageMode"
+                          [(ngModel)]="filtrosContenido.ageMode"
+                          (ngModelChange)="onFiltrosChange()">
+                    <option value="">Sin filtro</option>
+                    <option value="mayores">Mayores de… (+X)</option>
+                    <option value="menores">Menores de… (≤X)</option>
+                  </select>
+                  <input type="number" min="0" name="ageValue"
+                         [(ngModel)]="filtrosContenido.ageValue"
+                         (ngModelChange)="onFiltrosChange()" placeholder="X" />
+                </div>
+              </div>
+
+              <div class="filter-section">
+                <label for="resol">🖥️ Resolución</label>
+                <select id="resol" name="resolucion"
+                        [(ngModel)]="filtrosContenido.resolucion"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="">Todas</option>
+                  <option *ngFor="let r of resolucionesDisponibles" [value]="r">{{ r }}</option>
+                </select>
+              </div>
+
+              <div class="filter-section">
+                <label for="listaPublica">📂 Lista</label>
+                <select id="listaPublica"
+                        name="listaPublica"
+                        [(ngModel)]="filtrosContenido.listaId"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="">Todas</option>
+                  <option *ngFor="let l of listasPublicas" [value]="l.id">
+                    {{ l.nombre }} <span *ngIf="!l.publica"> (privada)</span>
+                  </option>
+                </select>
+                <small class="hint" *ngIf="!listasPublicas || listasPublicas.length === 0">
+                  No tienes listas ni hay listas públicas disponibles.
+                </small>
+              </div>
+
+              <div class="filter-section" *ngIf="isUsuario">
+
+              </div>
+
+              <div class="filter-section">
+                <label for="orden">↕️ Ordenar</label>
+                <select id="orden" name="ordenar"
+                        [(ngModel)]="filtrosContenido.ordenar"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="fecha">Fecha</option>
+                  <option value="titulo">Título</option>
+                  <option value="reproducciones">Reproducciones</option>
+                </select>
+              </div>
+
+              <div class="filter-section">
+                <label for="dir">⬆⬇ Dirección</label>
+                <select id="dir" name="dir"
+                        [(ngModel)]="filtrosContenido.dir"
+                        (ngModelChange)="onFiltrosChange()">
+                  <option value="desc">Descendente</option>
+                  <option value="asc">Ascendente</option>
+                </select>
+              </div>
+
+              <button type="button" class="btn--ghost btn-reset" (click)="resetFiltros()">Limpiar filtros</button>
+            </form>
+          </div>
+        </aside>
+
+        <!-- ÁREA DE CATÁLOGO -->
+        <main class="content-area user-catalog">
+
+          <div *ngIf="contenidosLoading" class="state loading">
+            <div class="spinner"></div>
+            <span>Cargando contenidos…</span>
+          </div>
+
+          <div *ngIf="!contenidosLoading && contenidosError" class="state error">
+            <span>⚠ {{ contenidosError }}</span>
+            <button class="btn--ghost" type="button" (click)="cargarContenidos()">Reintentar</button>
+          </div>
+
+          <div *ngIf="!contenidosLoading && !contenidosError && filteredCon.length === 0" class="state empty">
+            <span>No hay contenidos disponibles.</span>
+          </div>
+
+          <div class="catalog-wrap"
+               *ngIf="!contenidosLoading && !contenidosError && filteredCon.length > 0">
+            <div class="catalog-frame" #frame>
+              <div class="catalog-frame__head">
+                <div>
+                  <h2 class="catalog-frame__title">Catálogo
+                                    <button type="button"
+                        class="btn--ghost btn-reset"
+                        (click)="openCrearListaModal()"
+                        [disabled]="readOnly">
+                  Crear lista privada
+                </button>
+                  </h2>              
+                  <p class="catalog-frame__subtitle">
+                    {{ filteredCon.length }} contenido(s) · página {{ page }} / {{ totalPages }}
+                  </p>
+                </div>
+
+                <div class="catalog-chip-view" *ngIf="isUsuario">
+                  <span *ngIf="filterMode === 'todos'">📚 Todos</span>
+                  <span *ngIf="filterMode === 'favoritos'">❤️ Tus favoritos</span>
+                  <span *ngIf="filterMode === 'historial'">🕓 Historial visto</span>
+                </div>
+              </div>
+
+              <div class="grid">
+                <article *ngFor="let c of pagedCon" class="card" [class.is-open]="isDetailsOpen(c)">
+                  <div class="thumb"  [class.launching]="launchingId===c.id" (click)="openDetails(c)" (keydown)="handleKeyDown($event)">
+                    <ng-container *ngIf="c.imagen && c.imagen.trim(); else noimg">
+                      <img [src]="c.imagen!" [alt]="c.titulo" loading="lazy" />
+                    </ng-container>
+                    <ng-template #noimg>
+                      <div class="noimg" aria-hidden="true">Sin imagen</div>
+                    </ng-template>
+
+                    <div class="badges">
+                      <span class="badge info">{{ c.tipo }}</span>
+                      <span *ngIf="c.vip" class="badge vip">VIP</span>
+                      <span *ngIf="(c.restringidoEdad ?? 0) > 0" class="badge age">+{{ c.restringidoEdad }}</span>
+                    </div>
+
+                    <div class="title-bar">
+                      <h3 class="card-title" [title]="c.titulo">{{ c.titulo }}</h3>
+                        <app-star-rating
+                          class="rating-only"
+                          [contentId]="c.id"
+                          [userEmail]="userEmail"
+                          [enabled]="false"
+                          [autoReproducir]="false">
+                        </app-star-rating>
+                    </div>
+
+                    <div class="thumb-actions">
+                      <button type="button" class="play-btn" title="Reproducir" (click)="play(c); $event.stopPropagation()">▶</button>
+                      <button *ngIf="!readOnly" type="button" class="rate-btn" title="Valorar" (click)="toggleRating(c); $event.stopPropagation()">★</button>
+                    </div>
+                  </div>
+
+                  <div class="screen-dim" (click)="closeDetails(c)" (keydown)="handleKeyDown($event)" aria-hidden="true"></div>
+
+                  <div class="pop-card" aria-modal="true" (click)="$event.stopPropagation()" (keydown)="handleKeyDown($event)">
+                    <button type="button" class="pop-card__close" aria-label="Cerrar" (click)="closeDetails(c)">✕</button>
+
+                    <div class="pop-card__media">
+                      <ng-container *ngIf="c.imagen && c.imagen.trim(); else noimgPop">
+                        <img [src]="c.imagen!" [alt]="c.titulo" loading="lazy" />
+                      </ng-container>
+                      <ng-template #noimgPop>
+                        <div class="noimg" aria-hidden="true">Sin imagen</div>
+                      </ng-template>
+
+                      <div class="pop-card__badges">
+                        <span class="badge info">{{ c.tipo }}</span>
+                        <span *ngIf="c.vip" class="badge vip">VIP</span>
+                        <span *ngIf="(c.restringidoEdad ?? 0) > 0" class="badge age">+{{ c.restringidoEdad }}</span>
+                      </div>
+                    </div>
+
+                    <div class="pop-card__body">
+                      <div class="pop-card__head">
+                        <h3 class="pop-card__title" [title]="c.titulo">{{ c.titulo }}</h3>
+                        <div class="pop-card__rating">
+                          <app-star-rating
+                            [contentId]="c.id"
+                            [userEmail]="userEmail"
+                            [enabled]="false"
+                            [autoReproducir]="false">
+                          </app-star-rating>
+                        </div>
+                      </div>
+
+                      <p class="pop-card__desc" *ngIf="c.descripcion">{{ c.descripcion }}</p>
+
+                      <div class="pop-card__meta">
+                        <span>{{ c.resolucion || '—' }}</span>
+                        <span>·</span>
+                        <span>{{ c.duracionMinutos || '—' }} min</span>
+                        <span *ngIf="c.reproducciones !== undefined" class="plays" title="Reproducciones">· ▶ {{ c.reproducciones }}</span>
+                      </div>
+
+                      <div class="pop-card__actions">
+                        <button type="button" class="play-btn play-btn--lg" title="Reproducir" (click)="play(c); $event.stopPropagation()">▶</button>
+
+                        <button type="button"
+                                *ngIf="isUsuario"
+                                class="fav-btn fav-btn--lg"
+                                [class.is-fav]="isFav(c.id)"
+                                [attr.aria-pressed]="isFav(c.id)"
+                                [disabled]="pendingToggle[c.id]"
+                                (click)="onToggleFav(c.id); $event.stopPropagation()"
+                                [title]="isFav(c.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'">
+                          <svg viewBox="0 0 24 24" class="heart" aria-hidden="true">
+                            <path d="M12 21s-6.3-4.35-9.1-7.13A5.91 5.91 0 0 1 12 4a5.91 5.91 0 0 1 9.1 9.87C18.3 16.65 12 21 12 21z"/>
+                          </svg>
+                          <span class="sr-only">{{ isFav(c.id) ? 'Quitar de favoritos' : 'Añadir a favoritos' }}</span>
+                        </button>
+
+                        <button *ngIf="!readOnly" type="button" class="rate-btn rate-btn--lg" title="Valorar" (click)="toggleRating(c); $event.stopPropagation()">★</button>
+                      </div>
+
+                      <div class="rate-panel" *ngIf="isRatingOpen(c)">
+                        <app-star-rating
+                          [contentId]="c.id"
+                          [userEmail]="userEmail"
+                          [enabled]="true"
+                          [autoReproducir]="false"
+                          (rated)="onRated(c.id, $event)"> 
+                        </app-star-rating>
+                        <div class="rate-actions">
+                          <button type="button" class="btn--ghost" (click)="closeRating(c)">Cancelar</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                </article>
+              </div>
+
+              <div class="pager">
+                <button (click)="prevPage()" [disabled]="page <= 1">«</button>
+                <span class="page-info">Página {{ page }} / {{ totalPages }}</span>
+                <button (click)="nextPage()" [disabled]="page >= totalPages">»</button>
+              </div>
+
+            </div>
+          </div>
+
+        </main>
+
+      </div>
+    </section>
+
+  </div>
+
+  <button class="overlay" *ngIf="editOpen" (click)="cancelarEditar()"></button>
+  <div class="edit-panel modal" [class.open]="editOpen" (click)="$event.stopPropagation()" (keydown)="handleKeyDown($event)">
+    <h3>Editar perfil</h3>
+
+    <form (ngSubmit)="guardarCambios()">
+      <div class="row">
+        <label class="label-lock" for="email_ro">
+          Email <span class="lock" title="Campo bloqueado">🔒</span>
+          <span class="badge-ro">bloqueado</span>
+        </label>
+        <input id="email_ro" type="text" [ngModel]="userEmail" name="email_ro" class="ro" readonly />
+      </div>
+
+      <div class="row">
+        <label class="label-lock" for="fechaNac_ro">
+          Fecha de nacimiento <span class="lock" title="Campo bloqueado">🔒</span>
+          <span class="badge-ro">bloqueado</span>
+        </label>
+        <input type="date" [ngModel]="model.fechaNac" name="fechaNac_ro" class="ro" readonly />
+      </div>
+
+      <div class="row">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" [(ngModel)]="model.nombre" name="nombre" />
+      </div>
+
+      <div class="row">
+        <label for="apellidos">Apellidos</label>
+        <input id="apellidos" type="text" [(ngModel)]="model.apellidos" name="apellidos" />
+      </div>
+
+      <div class="row">
+        <label for="alias">Alias</label>
+        <input
+          id="alias"
+          type="text"
+          name="alias"
+          [(ngModel)]="model.alias"
+          (ngModelChange)="onAliasChange($event)"
+        />
+
+        <small class="err" *ngIf="aliasError">{{ aliasError }}</small>
+        <small class="hint" *ngIf="aliasChecking && !aliasError">Comprobando alias…</small>
+      </div>
+
+
+      <div class="row">
+        <label>VIP
+          <input type="checkbox" [(ngModel)]="model.vip" name="vip" (ngModelChange)="onVipChanged($event)" />
+        </label>
+      </div>
+
+      <div class="Avatar">
+        <label for="elegirAvatar">Avatar</label>
+        <button id="elegirAvatar" type="button" class="btn" (click)="openAvatarModal()">Elegir Avatar</button>
+        <div *ngIf="selectedAvatar" class="selected-avatar-card">
+          <img [src]="selectedAvatar" alt="avatar" class="selected-avatar-card__img">
+          <div class="selected-avatar-card__text">
+            <b>Avatar seleccionado</b>
+            <small>Puedes cambiarlo cuando quieras</small>
+          </div>
+        </div>
+      </div>
+
+      <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+      <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+      <div class="actions">
+        <button class="btn-darseBaja" type="button" (click)="DarDeBaja()">Eliminar Cuenta</button>
+        <button type="button" class="btn-out" (click)="cancelarEditar()">Cancelar</button>
+        <button
+          type="submit"
+          class="btn-primario"
+          [disabled]="saving || aliasChecking || aliasTaken || !!aliasError">
+          {{ saving ? 'Guardando…' : 'Guardar' }}
+        </button>
+
+      </div>
+    </form>
+  </div>
+
+  <div
+    *ngIf="showAvatarModal"
+    class="avatar-modal"
+    (click)="closeAvatarModal()"
+    (keydown.enter)="closeAvatarModal()"
+    (keydown.space)="closeAvatarModal()"
+    (keydown.escape)="closeAvatarModal()">
+
+    <dialog
+      class="avatar-modal-content"
+      open
+      aria-labelledby="avatarTitle"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()">
+
+      <h2 id="avatarTitle" class="avatar-modal-title">Seleccionar avatar</h2>
+
+      <div class="avatar-preview" *ngIf="selectedAvatar; else noPreview">
+        <img [src]="selectedAvatar" alt="avatar seleccionado">
+        <div class="avatar-preview__caption">Seleccionado</div>
+      </div>
+      <ng-template #noPreview>
+        <div class="avatar-preview avatar-preview--placeholder">
+          <span>Selecciona uno de la galería</span>
+        </div>
+      </ng-template>
+
+      <ul class="avatar-grid">
+        <li *ngFor="let avatar of avatars" class="avatar-option" [class.selected]="selectedAvatar === avatar">
+          <button type="button"
+                  (click)="selectAvatar(avatar)"
+                  (keydown.enter)="selectAvatar(avatar)"
+                  [attr.aria-pressed]="selectedAvatar === avatar"
+                  [attr.aria-label]="'Elegir avatar ' + avatar">
+            <img [src]="avatar" alt="avatar">
+            <span class="avatar-check">✓</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="avatar-modal-actions">
+        <button class="btn--ghost" type="button" (click)="closeAvatarModal()">Cancelar</button>
+      </div>
+    </dialog>
+  </div>
+
+  <div *ngIf="playerOpen">
+    <button
+      type="button"
+      class="player-overlay"
+      (click)="closePlayer()"
+      aria-label="Cerrar reproductor">
+    </button>
+
+    <div class="player-modal" (click)="$event.stopPropagation()" (keydown)="handleKeyDown($event)">
+      <div class="player-header">
+        <h3 class="player-title">{{ playingTitle }}</h3>
+        <button class="player-close" (click)="closePlayer()" aria-label="Cerrar">✕</button>
+      </div>
+
+      <div class="player-body">
+        <ng-container [ngSwitch]="playerKind">
+          <video
+            *ngSwitchCase="'VIDEO'"
+            #videoEl
+            [src]="playerSrc || undefined"
+            controls
+            autoplay
+            class="player-video">
+            <track src="subtitles.vtt" kind="subtitles" srclang="en" label="English">
+            <track src="descriptions.vtt" kind="descriptions" srclang="en" label="English Descriptions">
+          </video>
+
+          <audio
+            *ngSwitchCase="'AUDIO'"
+            #audioEl
+            [src]="playerSrc || undefined"
+            controls
+            autoplay
+            class="player-audio">
+          </audio>
+
+          <iframe
+            *ngSwitchCase="'EMBED'"
+            [src]="embedUrl || null"
+            title="Reproductor externo"
+            allow="autoplay; encrypted-media; picture-in-picture"
+            allowfullscreen
+            class="player-iframe">
+          </iframe>
+        </ng-container>
+      </div>
+
+      <div class="player-footer">
+        <button type="button" class="btn-out" (click)="closePlayer()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+<button class="overlay"
+        *ngIf="showCrearListaModal"
+        (click)="closeCrearListaModal()">
+</button>
+
+<div class="edit-panel modal lista-modal"
+     [class.open]="showCrearListaModal"
+     (click)="$event.stopPropagation()"
+     (keydown)="handleKeyDown($event)">
+
+  <h3>Crear lista privada</h3>
+
+  <form (ngSubmit)="crearLista()">
+    <div class="row">
+      <label for="nuevaListaNombre">Nombre de la lista</label>
+      <input id="nuevaListaNombre"
+             type="text"
+             name="nuevaListaNombre"
+             [(ngModel)]="nuevaListaNombre"
+             required />
+    </div>
+
+    <div class="row">
+      <label for="nuevaListaDescripcion">Descripción (opcional)</label>
+      <textarea id="nuevaListaDescripcion"
+                name="nuevaListaDescripcion"
+                rows="3"
+                [(ngModel)]="nuevaListaDescripcion">
+      </textarea>
+    </div>
+
+    <p class="ok" *ngIf="crearListaOk">{{ crearListaOk }}</p>
+    <p class="err" *ngIf="crearListaError">{{ crearListaError }}</p>
+
+    <div class="actions">
+      <button type="button" class="btn-out" (click)="closeCrearListaModal()">Cancelar</button>
+      <button type="submit"
+              class="btn-primario"
+              [disabled]="creatingList || !nuevaListaNombre.trim()">
+        {{ creatingList ? 'Creando…' : 'Guardar lista privada' }}
+      </button>
+    </div>
+  </form>
+</div>
+
+
+</div>

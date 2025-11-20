@@ -1,0 +1,84 @@
+package com.EsiMediaG03.EsiMediaContenidosG03;
+
+import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.HttpHeaders;
+
+import com.EsiMediaG03.dto.ModificarContenidoRequest;
+import com.EsiMediaG03.dto.StreamingTarget;
+import com.EsiMediaG03.exceptions.ContenidoModificationException;
+import com.EsiMediaG03.exceptions.StreamingTargetResolutionException;
+import com.EsiMediaG03.http.ContenidoController;
+import com.EsiMediaG03.model.Contenido;
+import com.EsiMediaG03.services.ContenidoService;
+
+@ExtendWith(MockitoExtension.class)
+class ContenidoControllerErrorPathsTest {
+
+    @Mock
+    ContenidoService contenidoService;
+
+    @InjectMocks
+    ContenidoController controller;
+
+    // ===== Helpers: Crea instancias REALES de StreamingTarget (ajusta firma si difiere) =====
+    private StreamingTarget externalTarget(String url, String mime) {
+        return new StreamingTarget(
+                null,                 // path
+                0L,                   // length
+                Objects.requireNonNullElse(mime, "video/mp4"),
+                false, url                   // externalUrl -> redirección
+        );
+    }
+
+    // =================== TESTS ===================
+
+    @Test
+    @DisplayName("stream(): si falla resolveStreamingTarget -> propaga StreamingTargetResolutionException")
+    void stream_falla_resolucion_propagada() throws Exception {
+        when(contenidoService.resolveStreamingTarget(anyString(), any(), any()))
+                .thenThrow(new StreamingTargetResolutionException("no se puede resolver"));
+
+        assertThrows(StreamingTargetResolutionException.class, () ->
+                controller.stream("id-x", new HttpHeaders(), null, null,null, null, null, true));
+
+        verify(contenidoService, never()).registrarReproduccionSiUsuario(anyString(), any());
+    }
+
+    @Test
+    @DisplayName("head(): si falla resolveStreamingTarget -> propaga StreamingTargetResolutionException")
+    void head_falla_resolucion_propagada() throws Exception {
+        when(contenidoService.resolveStreamingTarget(anyString(), any(), any()))
+                .thenThrow(new StreamingTargetResolutionException("no se puede resolver"));
+
+        assertThrows(StreamingTargetResolutionException.class, () ->
+                controller.head("id-x", null, null, null));
+    }
+
+
+    @Test
+    @DisplayName("modificarContenido(): si servicio lanza ContenidoModificationException -> se propaga")
+    void modificarContenido_error_propagado() throws Throwable {
+        ModificarContenidoRequest cambios = new ModificarContenidoRequest();
+        doThrow(new ContenidoModificationException("cambio inválido"))
+                .when(contenidoService)
+                .modificarContenido(eq("c1"), eq(cambios), eq(Contenido.Tipo.VIDEO));
+
+        assertThrows(ContenidoModificationException.class, () ->
+                controller.modificarContenido("c1", cambios, null, "VIDEO"));
+    }
+}

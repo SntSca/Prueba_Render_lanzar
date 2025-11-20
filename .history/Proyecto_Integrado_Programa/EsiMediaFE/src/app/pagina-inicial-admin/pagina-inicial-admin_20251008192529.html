@@ -1,0 +1,82 @@
+
+<div class="app">
+
+  <input id="filters-toggle" class="filters-toggle" type="checkbox" aria-hidden="true" />
+  
+
+  <!-- ── TOP BAR ── -->
+  <header class="topbar">
+    <div class="topbar__inner">
+      <div class="brand">Gestión de Usuarios</div>
+
+      <!-- Botón para abrir filtros en móvil -->
+      <label for="filters-toggle" class="btn btn-filters" aria-label="Abrir filtros">Filtros</label>
+
+      <a class="profile" href="#" title="Ir a gestión de perfil">
+        <div class="avatar">U</div>
+        <div class="profile__meta">
+          <div class="email">admin@esimedia.com</div>
+          <div class="role">ADMINISTRADOR</div>
+        </div>
+      </a>
+    </div>
+  </header>
+
+  <!-- Backdrop que cierra el drawer al tocar (móvil) -->
+  <label for="filters-toggle" class="backdrop" aria-hidden="true"></label>
+
+  <!-- ── LAYOUT PRINCIPAL ── -->
+  <div class="main">
+    <!-- FILTRADO -->
+    <aside class="sidebar" aria-label="Filtrado">
+      <h2>Filtrado</h2>
+      <p class="muted">Búsqueda y filtros.</p>
+
+      <label class="fld">
+        <span>Buscar por nombre</span>
+        <input id="searchName" type="text" placeholder="Ej. Ana, Juan..." />
+      </label>
+
+      <label class="fld">
+        <span>Rol</span>
+        <select id="roleSelect">
+          <option value="">Todos</option>
+          <option value="USUARIO">USUARIO</option>
+          <option value="GESTOR DE CONTENIDO">GESTOR DE CONTENIDO</option>
+          <option value="ADMINISTRADOR">ADMINISTRADOR</option>
+        </select>
+      </label>
+
+      <div class="fld">
+        <span>Fecha de alta (rango)</span>
+        <div class="fld-row">
+          <input id="dateFrom" type="date" />
+          <input id="dateTo" type="date" />
+        </div>
+      </div>
+
+      <div class="fld">
+        <span>Ordenar</span>
+        <div class="fld-row">
+          <select id="sortBy">
+            <option value="name">Nombre</option>
+            <option value="role">Rol</option>
+            <option value="date">Fecha de alta</option>
+            <option value="plan">Plan</option>
+          </select>
+          <select id="sortDir">
+            <option value="asc">Asc</option>
+            <option value="desc">Desc</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="fld" style="margin-top:16px">
+        <button id="applyBtn" class="btn">Aplicar</button>
+        <button id="clearBtn" class="btn" style="margin-left:8px">Limpiar</button>
+      </div>
+    </aside>
+
+    
+  </div>
+</div>

@@ -1,0 +1,275 @@
+# =========================
+# Azure Pipelines - EsiMedia
+# =========================
+name: $(Date:yyyyMMdd).$(Rev:r)
+
+trigger:
+  branches:
+    include:
+      - development
+      - main
+      - release/*
+  paths:
+    include:
+      - Proyecto_Integrado_Programa/Backend/*
+      - Proyecto_Integrado_Programa/EsiMediaFE/*
+      - Proyecto_Integrado_Programa/azure-pipelines.yml
+
+pr:
+  branches:
+    include:
+      - development
+  paths:
+    include:
+      - Proyecto_Integrado_Programa/Backend/*
+      - Proyecto_Integrado_Programa/EsiMediaFE/*
+      - Proyecto_Integrado_Programa/azure-pipelines.yml
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  - group: esimedia-secrets  
+  - name: jdkVersion
+    value: '17'
+  - name: nodeVersion
+    value: '20.x'
+  - name: m2Dir
+    value: '$(Agent.ToolsDirectory)/m2'
+  - name: IsMainOrRelease
+    value: $[or(eq(variables['Build.SourceBranch'],'refs/heads/main'), startsWith(variables['Build.SourceBranch'],'refs/heads/release/'))]
+
+# =================
+# STAGE: Preparation
+# =================
+stages:
+- stage: Preparation
+  displayName: "Preparation"
+  jobs:
+  - job: PrepJob
+    displayName: "Echo + checkout"
+    steps:
+    - checkout: self
+      persistCredentials: true
+    - script: |
+        echo "Branch: $(Build.SourceBranch)"
+        echo "IsMainOrRelease=$(IsMainOrRelease)"
+      displayName: "Context info"
+
+# =========
+# STAGE: Build
+# =========
+- stage: Build
+  displayName: "Build (Backend + Frontend)"
+  dependsOn: Preparation
+  jobs:
+  - job: Build_Backend
+    displayName: "Backend | mvn clean install"
+    steps:
+    - task: JavaToolInstaller@0
+      inputs:
+        jdkSourceOption: 'PreInstalled'
+        versionSpec: '$(jdkVersion)'
+        jdkArchitectureOption: 'x64'
+
+    - task: Cache@2
+      displayName: "Cache Maven"
+      inputs:
+        key: 'maven | "$(Agent.OS)" | Proyecto_Integrado_Programa/Backend/pom.xml'
+        restoreKeys: 'maven | "$(Agent.OS)"'
+        path: $(m2Dir)
+
+    - task: Maven@4
+      displayName: "mvn clean install (skip tests)"
+      inputs:
+        mavenPomFile: 'Proyecto_Integrado_Programa/Backend/pom.xml'
+        goals: 'clean install -DskipTests -T 1C'
+        options: '-Dmaven.repo.local=$(m2Dir)'
+
+    - task: CopyFiles@2
+      displayName: "Artefactos usersbe"
+      inputs:
+        contents: |
+          Proyecto_Integrado_Programa/Backend/usersbe/target/*.jar
+          Proyecto_Integrado_Programa/Backend/usersbe/target/*.war
+        targetFolder: '$(Build.ArtifactStagingDirectory)/usersbe'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/usersbe'
+        artifactName: 'usersbe'
+
+    - task: CopyFiles@2
+      displayName: "Artefactos contenidos"
+      inputs:
+        contents: |
+          Proyecto_Integrado_Programa/Backend/EsiMediaContenidosG03/target/*.jar
+          Proyecto_Integrado_Programa/Backend/EsiMediaContenidosG03/target/*.war
+        targetFolder: '$(Build.ArtifactStagingDirectory)/contenidos'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/contenidos'
+        artifactName: 'contenidos'
+
+  - job: Build_Frontend
+    displayName: "Frontend | npm ci + build"
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: '$(nodeVersion)'
+
+    - task: Cache@2
+      displayName: "Cache npm"
+      inputs:
+        key: 'npm | "$(Agent.OS)" | Proyecto_Integrado_Programa/EsiMediaFE/package-lock.json'
+        restoreKeys: 'npm | "$(Agent.OS)"'
+        path: $(Pipeline.Workspace)/.npm
+
+    - script: npm ci --cache $(Pipeline.Workspace)/.npm --prefer-offline
+      displayName: "npm ci"
+      workingDirectory: Proyecto_Integrado_Programa/EsiMediaFE
+
+    - script: npm run build || true
+      displayName: "npm run build"
+      workingDirectory: Proyecto_Integrado_Programa/EsiMediaFE
+
+    - task: CopyFiles@2
+      displayName: "Copiar dist"
+      inputs:
+        contents: 'Proyecto_Integrado_Programa/EsiMediaFE/dist/**'
+        targetFolder: '$(Build.ArtifactStagingDirectory)/frontend'
+
+    - task: PublishBuildArtifacts@1
+      inputs:
+        pathToPublish: '$(Build.ArtifactStagingDirectory)/frontend'
+        artifactName: 'frontend'
+
+# ========
+# STAGE: Test
+# ========
+- stage: Test
+  displayName: "Test (Backend)"
+  dependsOn: Build
+  jobs:
+  - job: Test_Backend
+    displayName: "Backend | mvn verify"
+    steps:
+    - task: JavaToolInstaller@0
+      inputs:
+        jdkSourceOption: 'PreInstalled'
+        versionSpec: '$(jdkVersion)'
+        jdkArchitectureOption: 'x64'
+
+    - task: Cache@2
+      inputs:
+        key: 'maven | "$(Agent.OS)" | Proyecto_Integrado_Programa/Backend/pom.xml'
+        restoreKeys: 'maven | "$(Agent.OS)"'
+        path: $(m2Dir)
+
+    - task: Maven@4
+      displayName: "mvn verify"
+      inputs:
+        mavenPomFile: 'Proyecto_Integrado_Programa/Backend/pom.xml'
+        goals: 'verify -T 1C'
+        options: '-Dmaven.repo.local=$(m2Dir)'
+        publishJUnitResults: true
+        testResultsFiles: '**/surefire-reports/TEST-*.xml'
+# =========
+# STAGE: Sonar
+# =========
+- stage: Sonar
+  displayName: "SonarQube (Local Agent)"
+  dependsOn: Test
+  jobs:
+
+  # ---- Backend ----
+  - job: Sonar_Backend
+    displayName: "Sonar BACKEND"
+    pool:
+      name: Sonar-pool
+    steps:
+      - task: Maven@4
+        displayName: "Compile & Test Backend (JaCoCo)"
+        inputs:
+          mavenPomFile: 'Proyecto_Integrado_Programa/Backend/pom.xml'
+          goals: 'clean verify'
+          options: '-Dmaven.repo.local=$(m2Dir)'
+
+      - powershell: |
+          cd "$(Build.SourcesDirectory)\Proyecto_Integrado_Programa\Backend"
+          & "C:\Users\AgenteLocal\sonar-scanner\bin\sonar-scanner.bat" `
+            -D sonar.token=$(SQ_TOKEN) `
+            -D sonar.java.binaries=usersbe/target/classes,EsiMediaContenidosG03/target/classes `
+            -D sonar.coverage.jacoco.xmlReportPaths=usersbe/target/site/jacoco/jacoco.xml,EsiMediaContenidosG03/target/site/jacoco/jacoco.xml
+        displayName: "Run Sonar Backend"
+
+  # ---- Frontend ----
+  - job: Sonar_Frontend
+    displayName: "Sonar FRONTEND"
+    dependsOn: Sonar_Backend
+    pool:
+      name: Sonar-pool
+    steps:
+      - script: |
+          cd Proyecto_Integrado_Programa/EsiMediaFE
+          npm ci
+          npm run build
+        displayName: "Build Frontend for Sonar"
+
+      - powershell: |
+          cd "$(Build.SourcesDirectory)\Proyecto_Integrado_Programa\EsiMediaFE"
+          & "C:\Users\AgenteLocal\sonar-scanner\bin\sonar-scanner.bat" `
+            -D sonar.token=$(SQ_TOKEN) `
+            -D sonar.sources=src `
+            -D sonar.javascript.lcov.reportPaths=coverage/lcov.info
+        displayName: "Run Sonar Frontend"
+# =========
+# STAGE: Sync to GitHub (para Render)
+# =========
+- stage: SyncToGitHub
+  displayName: "Sync Azure Repo → GitHub"
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/development'))
+  variables:
+    - group: GitHubSync
+
+  jobs:
+    - job: GitHubPush
+      displayName: "Push code to GitHub"
+      pool:
+        vmImage: ubuntu-latest
+
+      steps:
+        - checkout: self
+          persistCredentials: false
+          fetchDepth: 0   
+
+        - task: Bash@3
+          displayName: "Push repository to GitHub"
+          env:
+            GH_TOKEN: $(GH_TOKEN)
+            GH_USERNAME: $(GH_USERNAME)  
+          inputs:
+            targetType: 'inline'
+            script: |
+              echo "Configuring Git credentials..."
+              git config user.email "azuredevops@pipeline.com"
+              git config user.name "Azure DevOps Pipeline"
+
+              echo "Adding GitHub remote..."
+              git remote remove github >/dev/null 2>&1 || true
+              git remote add github "https://${GH_USERNAME}:${GH_TOKEN}@github.com/SntSca/ESIMediaG03.git"
+
+              echo "Current branch:"
+              git branch --show-current || echo "Detached HEAD"
+
+              echo "Creating local 'main' branch from current commit..."
+              git checkout -B main
+
+              echo "Adding changes..."
+              git add .
+              git diff-index --quiet HEAD || git commit -m "Sync from Azure DevOps"
+
+              echo "Pushing to GitHub (main)..."
+              git push github main --force

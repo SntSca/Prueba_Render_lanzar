@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Películas – Responsive</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app">
+
+    <!-- Toggle sin JS para abrir/cerrar filtros en móvil -->
+    <input id="filters-toggle" class="filters-toggle" type="checkbox" aria-hidden="true" />
+
+    <!-- ── TOP BAR ── -->
+    <header class="topbar">
+      <div class="topbar__inner">
+        <div class="brand">Barra de Opciones</div>
+
+        <!-- Botón para abrir filtros en móvil -->
+        <label for="filters-toggle" class="btn btn-filters" aria-label="Abrir filtros">Filtros</label>
+
+        <a class="profile" href="#" title="Ir a gestión de perfil">
+          <div class="avatar">Foto</div>
+          <div class="profile__meta">
+            <div class="email">correo@ejemplo.com</div>
+            <div class="role">Rol</div>
+          </div>
+        </a>
+      </div>
+    </header>
+
+    <!-- Backdrop que cierra el drawer al tocar (móvil) -->
+    <label for="filters-toggle" class="backdrop" aria-hidden="true"></label>
+
+    <!-- ── LAYOUT PRINCIPAL ── -->
+    <div class="main">
+      <!-- FILTRADO -->
+      <aside class="sidebar" aria-label="Filtrado">
+        <h2>Filtrado</h2>
+        <p class="muted">Búsqueda y filtros.</p>
+
+        <label class="fld">
+          <span>Buscar</span>
+          <input type="text" placeholder="Título, actor…" />
+        </label>
+
+        <label class="fld">
+          <span>Categoría</span>
+          <select>
+            <option>Todas</option>
+            <option>Acción</option>
+            <option>Drama</option>
+            <option>Comedia</option>
+          </select>
+        </label>
+
+        <label class="fld">
+          <span>Año</span>
+          <input type="number" min="1900" max="2099" step="1" placeholder="2024" />
+        </label>
+      </aside>
+
+      <!-- CONTENIDO (carruseles) -->
+      <main class="content" aria-label="Listado de películas">
+        <section class="row">
+          <h3>Título</h3>
+          <div class="carousel" role="list">
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película 1</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película 2</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película 3</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="row">
+          <h3>Título</h3>
+          <div class="carousel" role="list">
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película A</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película B</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película C</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="row">
+          <h3>Título</h3>
+          <div class="carousel" role="list">
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película X</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película Y</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+            <article class="item" role="listitem">
+              <div class="cover">Carátula de la película</div>
+              <div class="meta">
+                <div class="title">Película Z</div>
+                <div class="muted">Descripción breve</div>
+              </div>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

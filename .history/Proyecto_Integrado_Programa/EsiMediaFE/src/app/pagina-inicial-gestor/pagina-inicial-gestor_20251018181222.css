@@ -1,0 +1,173 @@
+/* ===== Modal de editar: tamaño contenido, centrado, con scroll propio ===== */
+.edit-panel.modal{
+  /* reset de botón para que NO se comporte como control grande */
+  -webkit-appearance: none;
+  appearance: none;
+  border: 1px solid #242424;
+  background: linear-gradient(180deg, #151515 0%, #121212 100%);
+  color: inherit;
+  text-align: left;
+  line-height: normal;
+
+  /* colocación y tamaño */
+  position: fixed;
+  left: 50%;
+  transform: translateX(-50%);
+  top: var(--top-offset);
+  width: min(var(--edit-form-w), 92vw);
+  max-width: min(var(--edit-form-w), 92vw);
+  height: auto;
+  max-height: calc(100svh - var(--top-offset) - 16px);
+
+  /* scroll SOLO del modal (barra derecha visible) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-gutter: stable both-edges;
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a2a #0e0e0e;
+
+  border-radius: var(--edit-radius);
+  box-shadow: 0 12px 36px rgba(0,0,0,.55);
+  box-sizing: border-box;
+  padding: 0;       /* quitamos relleno para que el header pegue arriba */
+  z-index: 10010;
+}
+
+/* WebKit scrollbar fino */
+.edit-panel.modal::-webkit-scrollbar{ width: 12px; }
+.edit-panel.modal::-webkit-scrollbar-track{ background: #0e0e0e; border-left: 1px solid #191919; }
+.edit-panel.modal::-webkit-scrollbar-thumb{ background: #2a2a2a; border-radius: 10px; border: 2px solid #0e0e0e; }
+.edit-panel.modal::-webkit-scrollbar-thumb:hover{ background: #3a3a3a; }
+
+/* Cerrar: fijo en el header */
+.edit-panel.modal .modal-close{
+  position: sticky;
+  top: 8px;
+  margin-left: auto;
+  right: 12px;
+  width: 32px;
+  height: 32px;
+  z-index: 3;
+}
+
+/* Título fijo arriba, no se mueve al aparecer la barra */
+.edit-panel.modal h3{
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 14px 16px 12px;
+  background: linear-gradient(180deg, #151515 0%, rgba(21,21,21,.9) 80%, rgba(21,21,21,.75) 100%);
+  border-bottom: 1px solid #242424;
+  font-size: 1.02rem;
+  letter-spacing: .2px;
+  text-align: left;
+  /* pequeño plus para compensar el gutter del scrollbar */
+  padding-right: calc(16px + 12px);
+}
+
+/* Cuerpo y formulario a una columna, campos a ancho completo */
+.edit-panel.modal .edit-body{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px 56px 12px; /* deja hueco para acciones sticky */
+  box-sizing: border-box;
+}
+.edit-panel.modal form{
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+.edit-panel .row{
+  width: 100%;
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.edit-panel .row label{
+  width: 100%;
+  display: grid;
+  gap: 8px;
+  font-weight: 600;
+}
+.edit-panel input[type="text"],
+.edit-panel input[type="date"]{
+  width: 100% !important;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 10px 12px;
+}
+
+/* Avatar compacto bajo el título, a la derecha */
+.selected-avatar-card{
+  width: 100%;
+  margin: 6px 0 0;
+  background: transparent;
+  border: 0;
+  padding: 8px 12px 0;
+  display: grid;
+  grid-template-columns: 1fr auto;  /* texto izq., foto dcha. */
+  align-items: center;
+}
+.selected-avatar-card__text{
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.selected-avatar-card__text b{ font-size: .92rem; margin: 0; }
+.selected-avatar-card__text small{ color: rgba(255,255,255,.7); font-size: .78rem; }
+.selected-avatar-card__img{
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 2px solid #e50914;
+  box-shadow: 0 0 0 3px rgba(229,9,20,.18);
+}
+.edit-panel .Avatar .btn{
+  width: 100%;
+  height: 36px;
+  margin: 8px 0 0;
+  font-weight: 600;
+}
+
+/* Barra de acciones pegada abajo y apilada */
+.edit-panel .actions{
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 8px;
+  padding: 10px 12px;
+  background: linear-gradient(0deg, #121212 0%, rgba(18,18,18,.94) 60%, rgba(18,18,18,.78) 100%);
+  border-top: 1px solid #242424;
+  margin: 0;
+}
+.edit-panel .btn-primario,
+.edit-panel .btn-out,
+.edit-panel .btn-darseBaja{
+  width: 100%;
+  min-width: 0;
+  height: 36px;
+  border-radius: 10px;
+}
+
+/* Ajustes responsivos finos */
+@media (max-height: 640px){
+  .edit-panel.modal{
+    max-height: calc(100svh - var(--top-offset) - 8px);
+  }
+}
+@media (max-width: 420px){
+  :root{ --edit-form-w: 94vw; }
+}

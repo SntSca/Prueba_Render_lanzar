@@ -1,0 +1,159 @@
+package com.EsiMediaG03.model;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
+import java.util.List;
+
+@Document(collection = "contenidos")
+public class Contenido {
+
+    @Id
+    private String id;
+
+    private String titulo;
+
+    private String descripcion;
+
+    // Si es audio: fichero subido (guardamos nombre o ruta relativa)
+    private String ficheroAudio;
+
+    // Si es vídeo: URL externa (YouTube, Vimeo, etc.)
+    private String urlVideo;
+
+    private List<String> tags;
+
+    private int duracionMinutos;
+
+    private String resolucion; // 720, 1080, 4k (solo para vídeo)
+
+    private boolean vip;
+
+    private boolean visible;
+
+    private LocalDateTime fechaEstado = LocalDateTime.now();
+
+    private LocalDateTime disponibleHasta; // null = siempre disponible
+
+    private boolean restringidoEdad;
+
+    private Tipo tipo; // AUDIO o VIDEO
+
+    public enum Tipo {
+        AUDIO, VIDEO
+    }
+
+    // ========================
+    //      CONSTRUCTORES
+    // ========================
+    public Contenido() {}
+
+    // ========================
+    //      GETTERS / SETTERS
+    // ========================
+
+    public String getId() {
+        return id;
+    }
+
+    public String getTitulo() {
+        return titulo;
+    }
+
+    public void setTitulo(String titulo) {
+        this.titulo = titulo;
+    }
+
+    public String getDescripcion() {
+        return descripcion;
+    }
+
+    public void setDescripcion(String descripcion) {
+        this.descripcion = descripcion;
+    }
+
+    public String getFicheroAudio() {
+        return ficheroAudio;
+    }
+
+    public void setFicheroAudio(String ficheroAudio) {
+        this.ficheroAudio = ficheroAudio;
+    }
+
+    public String getUrlVideo() {
+        return urlVideo;
+    }
+
+    public void setUrlVideo(String urlVideo) {
+        this.urlVideo = urlVideo;
+    }
+
+    public List<String> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<String> tags) {
+        this.tags = tags;
+    }
+
+    public int getDuracionMinutos() {
+        return duracionMinutos;
+    }
+
+    public void setDuracionMinutos(int duracionMinutos) {
+        this.duracionMinutos = duracionMinutos;
+    }
+
+    public String getResolucion() {
+        return resolucion;
+    }
+
+    public void setResolucion(String resolucion) {
+        this.resolucion = resolucion;
+    }
+
+    public boolean isVip() {
+        return vip;
+    }
+
+    public void setVip(boolean vip) {
+        this.vip = vip;
+    }
+
+    public boolean isVisible() {
+        return visible;
+    }
+
+    public void setVisible(boolean visible) {
+        this.visible = visible;
+        this.fechaEstado = LocalDateTime.now(); // actualiza fecha automáticamente
+    }
+
+    public LocalDateTime getFechaEstado() {
+        return fechaEstado;
+    }
+
+    public LocalDateTime getDisponibleHasta() {
+        return disponibleHasta;
+    }
+
+    public void setDisponibleHasta(LocalDateTime disponibleHasta) {
+        this.disponibleHasta = disponibleHasta;
+    }
+
+    public boolean isRestringidoEdad() {
+        return restringidoEdad;
+    }
+
+    public void setRestringidoEdad(boolean restringidoEdad) {
+        this.restringidoEdad = restringidoEdad;
+    }
+
+    public Tipo getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(Tipo tipo) {
+        this.tipo = tipo;
+    }
+}

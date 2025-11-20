@@ -1,0 +1,23 @@
+html, body {
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+    width: 100vw; /* Asegura que ocupe todo el ancho de la ventana */
+    margin: 0; /* Elimina márgenes */
+    padding: 0; /* Elimina padding */
+    overflow: hidden; /* Evita scroll innecesario */
+    background:
+        radial-gradient(900px 420px at 80% -6%, rgba(229,9,20,.14), transparent 65%),
+        radial-gradient(700px 380px at 8% -8%, rgba(229,9,20,.08), transparent 60%),
+        var(--bg);
+    color: var(--ink);
+    font-family: Inter, system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.4;
+}
+
+.app {
+    height: 100vh; /* Asegura que ocupe toda la altura de la ventana */
+    width: 100vw; /* Asegura que ocupe todo el ancho de la ventana */
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+}

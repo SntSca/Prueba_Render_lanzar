@@ -1,0 +1,42 @@
+<!-- Idle timeout modal existente -->
+@if (warningVisible$ | async) {
+  <div class="session-timeout-backdrop">
+    <div class="session-timeout-modal">
+      <h2>¿Sigues ahí?</h2>
+      <p>Tu sesión ha estado inactiva durante un tiempo.</p>
+      <p>
+        Se cerrará automáticamente en
+        <strong>{{ (countdown$ | async) ?? 300 }}</strong>
+        segundos si no haces nada.
+      </p>
+    </div>
+  </div>
+}
+
+<!-- NUEVO: Modal absolute timeout -->
+@if (absoluteWarningVisible$ | async) {
+  <div class="session-timeout-backdrop">
+    <div class="session-timeout-modal absolute-timeout">
+      <h2>La sesión está a punto de expirar</h2>
+
+      <p>
+        Han pasado casi 8 horas desde que iniciaste sesión.<br />
+        Se cerrará automáticamente en
+        <strong>{{ (absoluteCountdown$ | async) ?? 60 }}</strong>
+        segundos.
+      </p>
+
+      <div class="buttons">
+        <button (click)="onAbsoluteLogoutClick()" class="btn-logout">
+          Cerrar Sesión
+        </button>
+
+        <button (click)="onContinueAbsoluteClick()" class="btn-continue">
+          Continuar Sesión
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<router-outlet></router-outlet>

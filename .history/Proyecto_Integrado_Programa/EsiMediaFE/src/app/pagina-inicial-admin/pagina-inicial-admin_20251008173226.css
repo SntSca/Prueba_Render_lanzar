@@ -1,0 +1,50 @@
+/* MAIN layout: sidebar a la izquierda, contenido a la derecha */
+.main {
+  display: grid;
+  grid-template-columns:300px 1fr; /* SIDEBAR 300px, contenido flexible */
+  gap:var(--gap);
+  max-width:1280px;
+  width:100%;
+  margin:16px auto;
+  padding:0 16px;
+}
+
+/* Sidebar ya estaba ok, no cambia */
+.sidebar {
+  background:var(--panel);
+  border-radius:var(--radius-lg);
+  box-shadow:var(--shadow);
+  padding:22px;
+  border:2px solid rgba(0,0,0,.06);
+  position:relative;
+}
+
+/* Tabla dentro del contenido */
+.table-section {
+  background:#fff7ef;
+  border:4px solid var(--stroke);
+  border-radius:14px;
+  padding:16px 24px;
+}
+
+.users-table {
+  width:100%;
+  border-collapse:collapse;
+  font-size:0.95rem;
+}
+
+.users-table th,
+.users-table td {
+  text-align:left;
+  padding:10px 12px;
+  border-bottom:2px solid rgba(0,0,0,.08);
+}
+
+.users-table th {
+  background:var(--panel);
+  font-weight:600;
+}
+
+.users-table tbody tr:hover {
+  background:rgba(255,200,0,.1);
+}

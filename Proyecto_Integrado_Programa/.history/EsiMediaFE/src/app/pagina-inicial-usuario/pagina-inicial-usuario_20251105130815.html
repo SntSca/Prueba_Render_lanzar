@@ -1,0 +1,328 @@
+<!-- BANNER MODO LECTURA -->
+<div class="ro-banner" *ngIf="readOnly">
+  <span>📖 Modo lectura activado — no puedes interactuar con esta página.</span>
+  <button
+    class="btn-cerrar"
+    *ngIf="fromAdmin"
+    type="button"
+    (click)="salirModoLectura()"
+    aria-label="Salir del modo lectura">
+    Salir del modo lectura
+  </button>
+</div>
+
+<div class="ro-wrap" [class.readonly]="readOnly">
+
+  <div class="usuario-header">
+    <div class="usuario-info">
+      <div class="ava">
+        <img *ngIf="userAvatar" [src]="userAvatar" alt="Avatar" class="avatar-img">
+        <span *ngIf="!userAvatar" class="avatar-initials">{{ userInitials }}</span>
+      </div>
+      <div class="datos">
+        <div class="nombre-wrap">
+          <div class="nombre">{{ userName }}</div>
+          <button class="edit-inline" type="button" (click)="toggleEditar()" title="Editar perfil">✏️</button>
+        </div>
+        <div class="email">{{ userEmail }}</div>
+      </div>
+    </div>
+    <div class="btn-wrap">
+      <button class="btn-favs" *ngIf="isUsuario" (click)="goMisFavoritos()">
+        ❤️ Mis Favoritos
+      </button>
+      <button class="btn-cerrar" (click)="CerrarSesion()">Cerrar sesión</button>
+    </div>
+  </div>
+
+
+  <section class="contenidos-section" aria-label="Catálogo de contenidos">
+    <div *ngIf="contenidosLoading" class="state loading">
+      <div class="spinner"></div>
+      <span>Cargando contenidos…</span>
+    </div>
+
+    <div *ngIf="!contenidosLoading && contenidosError" class="state error">
+      <span>⚠ {{ contenidosError }}</span>
+      <button class="btn--ghost" type="button" (click)="cargarContenidos()">Reintentar</button>
+    </div>
+
+    <div *ngIf="!contenidosLoading && !contenidosError && contenidos.length === 0" class="state empty">
+      <span>No hay contenidos disponibles.</span>
+    </div>
+
+  
+    <div class="catalog-wrap" *ngIf="!contenidosLoading && !contenidosError && contenidos.length > 0">
+      <div class="catalog-frame">
+        <div class="catalog-frame__head">
+          <h2 class="catalog-frame__title">Catálogo</h2>
+        </div>
+
+        <div class="grid">
+          <article *ngFor="let c of contenidos" class="card">
+            <div class="thumb">
+              <ng-container *ngIf="c.imagen && c.imagen.trim(); else noimg">
+                <img [src]="c.imagen!" [alt]="c.titulo" loading="lazy" />
+              </ng-container>
+              <ng-template #noimg>
+                <div class="noimg" aria-hidden="true">Sin imagen</div>
+              </ng-template>
+
+              <div class="badges">
+                <span class="badge info">{{ c.tipo }}</span>
+                <span *ngIf="c.vip" class="badge vip">VIP</span>
+                <span *ngIf="(c.restringidoEdad ?? 0) > 0" class="badge age">+{{ c.restringidoEdad }}</span>
+              </div>
+
+            
+              <div class="title-bar">
+                <h3 class="card-title" [title]="c.titulo">{{ c.titulo }}</h3>
+                <div class="title-bar__rating">
+                  <app-star-rating
+                    [contentId]="c.id"
+                    [userEmail]="userEmail"
+                    [enabled]="false"
+                    [autoReproducir]="false">
+                  </app-star-rating>
+                </div>
+              </div>
+
+             
+              <button type="button" class="play-btn" title="Reproducir" (click)="play(c)">▶</button>
+              <button *ngIf="!readOnly" type="button" class="rate-btn" title="Valorar" (click)="toggleRating(c)">★</button>
+            </div>
+
+           
+            <div class="screen-dim" aria-hidden="true"></div>
+
+            
+            <div class="pop-card" role="dialog" aria-modal="true" (click)="$event.stopPropagation()" >
+              <div class="pop-card__media">
+                <ng-container *ngIf="c.imagen && c.imagen.trim(); else noimgPop">
+                  <img [src]="c.imagen!" [alt]="c.titulo" loading="lazy" />
+                </ng-container>
+                <ng-template #noimgPop>
+                  <div class="noimg" aria-hidden="true">Sin imagen</div>
+                </ng-template>
+
+                <div class="pop-card__badges">
+                  <span class="badge info">{{ c.tipo }}</span>
+                  <span *ngIf="c.vip" class="badge vip">VIP</span>
+                  <span *ngIf="(c.restringidoEdad ?? 0) > 0" class="badge age">+{{ c.restringidoEdad }}</span>
+                </div>
+              </div>
+
+              <div class="pop-card__body">
+                <div class="pop-card__head">
+                  <h3 class="pop-card__title" [title]="c.titulo">{{ c.titulo }}</h3>
+                  <div class="pop-card__rating">
+                    <app-star-rating
+                      [contentId]="c.id"
+                      [userEmail]="userEmail"
+                      [enabled]="false"
+                      [autoReproducir]="false">
+                    </app-star-rating>
+                  </div>
+                </div>
+
+                <p class="pop-card__desc" *ngIf="c.descripcion">{{ c.descripcion }}</p>
+
+                <div class="pop-card__meta">
+                  <span>{{ c.resolucion || '—' }}</span>
+                  <span>·</span>
+                  <span>{{ c.duracionMinutos || '—' }} min</span>
+                  <span *ngIf="c.reproducciones !== undefined" class="plays" title="Reproducciones">
+                    · ▶ {{ c.reproducciones }}
+                  </span>
+                </div>
+
+                <div class="pop-card__actions">
+                  <button type="button" class="play-btn play-btn--lg" title="Reproducir" (click)="play(c)">▶</button>
+                  <button type="button"
+                          *ngIf="isUsuario"
+                          class="fav-btn fav-btn--lg"
+                          [class.is-fav]="isFav(c.id)"
+                          [attr.aria-pressed]="isFav(c.id)"
+                          [disabled]="pendingToggle[c.id]"
+                          (click)="onToggleFav(c.id)"
+                          [title]="isFav(c.id) ? 'Quitar de favoritos' : 'Añadir a favoritos'">
+                    <svg viewBox="0 0 24 24" class="heart" aria-hidden="true">
+                      <path d="M12 21s-6.3-4.35-9.1-7.13A5.91 5.91 0 0 1 12 4a5.91 5.91 0 0 1 9.1 9.87C18.3 16.65 12 21 12 21z"/>
+                    </svg>
+                    <span class="sr-only">{{ isFav(c.id) ? 'Quitar de favoritos' : 'Añadir a favoritos' }}</span>
+                  </button>
+                  <button *ngIf="!readOnly" type="button" class="rate-btn rate-btn--lg" title="Valorar" (click)="toggleRating(c)">★</button>
+                </div>
+
+                <div class="rate-panel" *ngIf="isRatingOpen(c)">
+                  <app-star-rating
+                    [contentId]="c.id"
+                    [userEmail]="userEmail"
+                    [enabled]="true"
+                    [autoReproducir]="false"
+                    (rated)="onRated(c.id, $event)">
+                  </app-star-rating>
+                  <div class="rate-actions">
+                    <button type="button" class="btn--ghost" (click)="closeRating(c)">Cancelar</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </article>
+        </div>
+       
+      </div>
+    </div>
+    
+  </section>
+
+  
+  <button class="overlay" *ngIf="editOpen" (click)="cancelarEditar()"></button>
+  <div class="edit-panel modal" [class.open]="editOpen" (click)="$event.stopPropagation()" (keydown)="handleKeyDown($event)">
+    <h3>Editar perfil</h3>
+
+    <form (ngSubmit)="guardarCambios()">
+      <div class="row">
+        <label class="label-lock" for="email_ro">
+          Email
+          <span class="lock" title="Campo bloqueado">🔒</span>
+          <span class="badge-ro">bloqueado</span>
+        </label>
+        <input id="email_ro" type="text" [ngModel]="userEmail" name="email_ro" class="ro" readonly />
+      </div>
+
+      <div class="row">
+        <label class="label-lock" for="fechaNac_ro">
+          Fecha de nacimiento
+          <span class="lock" title="Campo bloqueado">🔒</span>
+          <span class="badge-ro">bloqueado</span>
+        </label>
+        <input type="date" [ngModel]="model.fechaNac" name="fechaNac_ro" class="ro" readonly />
+      </div>
+
+      <div class="row">
+        <label for="nombre">Nombre</label>
+        <input id="nombre" type="text" [(ngModel)]="model.nombre" name="nombre" />
+      </div>
+
+      <div class="row">
+        <label for="apellidos">Apellidos</label>
+        <input id="apellidos" type="text" [(ngModel)]="model.apellidos" name="apellidos" />
+      </div>
+
+      <div class="row">
+        <label for="alias">Alias</label>
+        <input id="alias" type="text" [(ngModel)]="model.alias" name="alias" />
+      </div>
+
+      <div class="row">
+        <label>VIP
+          <input type="checkbox" [(ngModel)]="model.vip" name="vip" (ngModelChange)="onVipChanged($event)" />
+        </label>
+      </div>
+
+      <div class="Avatar">
+        <label for="elegirAvatar">Avatar</label>
+        <button id="elegirAvatar" type="button" class="btn" (click)="openAvatarModal()">Elegir Avatar</button>
+        <div *ngIf="selectedAvatar" class="selected-avatar-card">
+          <img [src]="selectedAvatar" alt="avatar" class="selected-avatar-card__img">
+          <div class="selected-avatar-card__text">
+            <b>Avatar seleccionado</b>
+            <small>Puedes cambiarlo cuando quieras</small>
+          </div>
+        </div>
+      </div>
+
+      <p class="ok" *ngIf="okMsg">{{ okMsg }}</p>
+      <p class="err" *ngIf="errorMsg">{{ errorMsg }}</p>
+
+      <div class="actions">
+        <button class="btn-darseBaja" type="button" (click)="DarDeBaja()">Eliminar Cuenta</button>
+        <button type="button" class="btn-out" (click)="cancelarEditar()">Cancelar</button>
+        <button type="submit" class="btn-primario" [disabled]="saving">
+          {{ saving ? 'Guardando…' : 'Guardar' }}
+        </button>
+      </div>
+    </form>
+  </div>
+
+  
+  <div class="ro-overlay" *ngIf="readOnly" aria-hidden="true" style="pointer-events: none;"></div>
+
+  
+  <div
+    *ngIf="showAvatarModal"
+    class="avatar-modal"
+    (click)="closeAvatarModal()"
+    (keydown.enter)="closeAvatarModal()"
+    (keydown.space)="closeAvatarModal()"
+    (keydown.escape)="closeAvatarModal()">
+
+    <dialog
+      class="avatar-modal-content"
+      open
+      aria-labelledby="avatarTitle"
+      aria-modal="true"
+      (click)="$event.stopPropagation()"
+      (keydown)="$event.stopPropagation()">
+
+      <h2 id="avatarTitle" class="avatar-modal-title">Seleccionar avatar</h2>
+
+      <div class="avatar-preview" *ngIf="selectedAvatar; else noPreview">
+        <img [src]="selectedAvatar" alt="avatar seleccionado">
+        <div class="avatar-preview__caption">Seleccionado</div>
+      </div>
+      <ng-template #noPreview>
+        <div class="avatar-preview avatar-preview--placeholder">
+          <span>Selecciona uno de la galería</span>
+        </div>
+      </ng-template>
+
+      <ul class="avatar-grid">
+        <li *ngFor="let avatar of avatars"
+            class="avatar-option"
+            [class.selected]="selectedAvatar === avatar">
+          <button type="button"
+                  (click)="selectAvatar(avatar)"
+                  (keydown.enter)="selectAvatar(avatar)"
+                  [attr.aria-pressed]="selectedAvatar === avatar"
+                  [attr.aria-label]="'Elegir avatar ' + avatar">
+            <img [src]="avatar" alt="avatar">
+            <span class="avatar-check">✓</span>
+          </button>
+        </li>
+      </ul>
+
+      <div class="avatar-modal-actions">
+        <button class="btn--ghost" type="button" (click)="closeAvatarModal()">Cancelar</button>
+      </div>
+    </dialog>
+  </div>
+
+
+  <div class="overlay" *ngIf="playerOpen" (click)="closePlayer()" (keydown)="($event)"></div>
+  <div class="edit-panel modal" [class.open]="playerOpen" (click)="$event.stopPropagation()" (keydown)="handleKeyDown($event)">
+    <h3 style="margin-bottom:8px; display:flex; align-items:center; gap:8px;">Reproductor Multimedia</h3>
+    <ng-container [ngSwitch]="playerKind">
+      <video *ngSwitchCase="'VIDEO'"
+            [src]="playerSrc || undefined"
+            controls
+            autoplay
+            style="width:100%; max-height:60vh; border-radius:10px;">
+        <track src="subtitles.vtt" kind="subtitles" srclang="en" label="English">
+        <track src="descriptions.vtt" kind="descriptions" srclang="en" label="English Descriptions">
+      </video>
+
+      <audio *ngSwitchCase="'AUDIO'"
+            [src]="playerSrc || undefined"
+            controls
+            autoplay
+            style="width:100%;">
+      </audio>
+    </ng-container>
+
+    <div class="actions" style="margin-top:10px;">
+      <button type="button" class="btn-out" (click)="closePlayer()">Cerrar</button>
+    </div>
+  </div>
+</div>

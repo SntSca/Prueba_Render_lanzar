@@ -1,0 +1,26 @@
+.main {
+  display: flex;             /* coloca sidebar y contenido en fila */
+  gap: 20px;                 /* espacio entre sidebar y contenido */
+  max-width: 1280px;
+  margin: 16px auto;
+  padding: 0 16px;
+}
+
+.sidebar {
+  flex: 0 0 250px;           /* ancho fijo */
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 0 8px rgba(0,0,0,0.1);
+}
+
+.content {
+  flex: 1;                   /* ocupa el resto del espacio */
+  background: #fff7ef;
+  border-radius: 12px;
+  padding: 20px;
+  display: flex;             /* si quieres carrusel horizontal */
+  align-items: center;
+  justify-content: flex-start;
+  gap: 16px;                 /* espacio entre tarjetas */
+}

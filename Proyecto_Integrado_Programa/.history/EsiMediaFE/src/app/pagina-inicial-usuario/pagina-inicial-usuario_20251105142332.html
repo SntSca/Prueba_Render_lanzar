@@ -1,0 +1,25 @@
+/* estado base: oculto */
+.card .pop-card,
+.card .screen-dim {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
+}
+
+/* al abrir por click */
+.card.is-open .pop-card,
+.card.is-open .screen-dim {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ejemplo de botón de cierre */
+.pop-card__close {
+  position: absolute;
+  top: .5rem;
+  right: .5rem;
+  border: 0;
+  background: transparent;
+  font-size: 1.1rem;
+  cursor: pointer;
+}

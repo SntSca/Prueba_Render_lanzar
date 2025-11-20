@@ -1,0 +1,66 @@
+.session-timeout-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.session-timeout-modal {
+  background: #1e1e1e;
+  color: #f5f5f5;
+  padding: 24px 28px;
+  border-radius: 14px;
+  max-width: 420px;
+  width: 90%;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.session-timeout-modal h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1.4rem;
+}
+
+.session-timeout-modal p {
+  margin: 6px 0;
+  line-height: 1.4;
+}
+
+.session-timeout-actions {
+  margin-top: 18px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.btn-session-secondary,
+.btn-session-primary {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+
+.btn-session-secondary {
+  background: transparent;
+  color: #dddddd;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.btn-session-secondary:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.btn-session-primary {
+  background: #2563eb; /* azul */
+  color: white;
+}
+
+.btn-session-primary:hover {
+  filter: brightness(1.08);
+}
