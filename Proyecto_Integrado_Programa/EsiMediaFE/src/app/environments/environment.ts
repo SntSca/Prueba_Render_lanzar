@@ -1,7 +1,7 @@
 export const environment = {
   production: false,
 
-  API_USERS_BASE: 'http://localhost:8081',
+  API_USERS_BASE: 'https://prueba-render-lanzar.onrender.com',
 
   API_CONTENIDOS_BASE: 'http://localhost:8082',
 
