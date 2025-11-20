@@ -33,6 +33,10 @@ import com.EsiMediaG03.services.ContenidoService;
 
 @RestController
 @RequestMapping("Contenidos")
+@CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://front-prueba-rvjq.onrender.com"
+})
 public class ContenidoController {
 
     private static final long DEFAULT_CHUNK_SIZE = 1024L * 1024L;
