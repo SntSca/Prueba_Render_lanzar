@@ -3,7 +3,7 @@ export const environment = {
 
   API_USERS_BASE: 'https://prueba-render-lanzar.onrender.com',
 
-  API_CONTENIDOS_BASE: 'http://localhost:8082',
+  API_CONTENIDOS_BASE: 'https://prueba-render-lanzar-contenidos.onrender.com',
 
-  API_BASE: 'http://localhost:8082'
+  API_BASE: 'https://prueba-render-lanzar-contenidos.onrender.com'
 };
