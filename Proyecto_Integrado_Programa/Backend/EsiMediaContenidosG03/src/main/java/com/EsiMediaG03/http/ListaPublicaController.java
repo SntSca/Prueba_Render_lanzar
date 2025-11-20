@@ -5,11 +5,17 @@ import com.EsiMediaG03.services.ListaPublicaService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
+
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/listas")
+@CrossOrigin(origins = {
+    "http://localhost:4200",
+    "https://front-prueba-rvjq.onrender.com"
+})
 public class ListaPublicaController {
 
     private final ListaPublicaService listaService;
