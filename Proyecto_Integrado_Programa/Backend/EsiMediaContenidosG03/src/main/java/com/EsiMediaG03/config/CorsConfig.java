@@ -8,7 +8,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import jakarta.annotation.PostConstruct;
 
 @Configuration
-public class WebConfig implements WebMvcConfigurer {
+public class CorsConfig implements WebMvcConfigurer {
 
     @Value("${app.cors.allowedOrigins:}")
     private String allowedOrigins;
