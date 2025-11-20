@@ -12,23 +12,23 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Value("${app.cors.allowedOrigins:}")
     private String allowedOrigins;
-    
+
     @PostConstruct
     void initCorsDefaults() {
         if (allowedOrigins == null || allowedOrigins.isBlank()) {
-            allowedOrigins = "http://localhost:4200";
+            allowedOrigins = "http://localhost:4200,https://front-prueba-rvjq.onrender.com";
         }
     }
 
-
-
-    @SuppressWarnings("null")
     @Override
     public void addCorsMappings(CorsRegistry registry) {
+        String[] origins = allowedOrigins.split("\\s*,\\s*");
+
         registry.addMapping("/**")
-            .allowedOrigins(allowedOrigins)
+            .allowedOrigins(origins)
             .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS")
             .allowedHeaders("*")
             .allowCredentials(true);
     }
 }
+
